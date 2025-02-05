@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import Result from '$lib/components/Result.svelte';
 	import Filter from '$lib/components/Filter.svelte';
-	import { db } from '$lib/db';
 	import { queryFTS } from '$lib/fts';
 
 	let search = '';
@@ -11,9 +10,19 @@
 
 	async function loadFilters() {
 		const faecherRaw = await fetch(`/api/getFilters?filter=${'fach'}`);
-		const faecher = ['fach', await faecherRaw.json()];
+		const faecherList = await faecherRaw.json();
+		const sortedFaecher = faecherList.sort((a, b) =>
+			a.fach.value.localeCompare(b.fach.value, 'de', { sensitivity: 'base' })
+		);
+		const faecher = ['fach', sortedFaecher];
+
 		const jahrgangsstufeRaw = await fetch(`/api/getFilters?filter=${'jahrgangsstufe'}`);
-		const jahrgangsstufe = ['jahrgangsstufe', await jahrgangsstufeRaw.json()];
+		const jahrgangsstufeList = await jahrgangsstufeRaw.json();
+		const sortedJahrgangsstufe = jahrgangsstufeList.sort(
+			(a, b) => Number(a.jahrgangsstufe.value) - Number(b.jahrgangsstufe.value)
+		);
+
+		const jahrgangsstufe = ['jahrgangsstufe', sortedJahrgangsstufe];
 		filters = [faecher, jahrgangsstufe];
 	}
 	onMount(() => {
@@ -23,7 +32,7 @@
 	async function handleQuery(event) {
 		try {
 			event.preventDefault();
-			const res = await queryFTS();
+			const res = await queryFTS(search);
 			results = await res.json();
 		} catch (error) {
 			console.error('Error fetching results:', error);
@@ -33,15 +42,19 @@
 
 <div class="mt-2 flex w-full flex-col items-center justify-center">
 	<form onsubmit={handleQuery}>
-		<label for="query"
-			>Wonach suchst du?
-			<input bind:value={search} id="query" type="text" />
-		</label>
-		{#if filters.length}
-			{#each filters as filter}
-				<Filter {filter} />
-			{/each}
-		{/if}
+		<div class="flex flex-col items-center justify-center md:flex md:flex-row">
+			<label for="query"
+				>Wonach suchst du?
+				<input bind:value={search} id="query" type="text" />
+			</label>
+			<div>
+				{#if filters.length}
+					{#each filters as filter}
+						<Filter {filter} />
+					{/each}
+				{/if}
+			</div>
+		</div>
 	</form>
 
 	{#if results.length}

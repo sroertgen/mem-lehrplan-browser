@@ -3,7 +3,6 @@
 
 	export let result;
 	export let search;
-	// console.log(result);
 
 	function highlightText(text, word) {
 		if (!word) return text;
@@ -11,7 +10,7 @@
 		return parts
 			.map((part) =>
 				part.toLowerCase() === word.toLowerCase()
-					? `<span class="underline decoration-indigo-500 bg-yellow-300">${part}</span>`
+					? `<span class="underline decoration-indigo-500 text-black bg-yellow-300">${part}</span>`
 					: part
 			)
 			.join('');
@@ -19,16 +18,21 @@
 	$: highlightedText = highlightText(result.value.value, search);
 </script>
 
-<div class="card card-border bg-base-100 w-3/4">
+<div class="card card-border bg-base-100 w-full md:w-3/4">
 	<div class="card-body">
-		<div class="flex flex-row items-center justify-between">
+		<div class="flex flex-col md:flex-row md:items-center md:justify-between">
 			<h2 class="card-title">{uriMappings[result.type.value] ?? result.type.value}</h2>
-			<div class="flex gap-2">
+			<div class="flex flex-col gap-2 md:flex md:flex-row">
 				{#if result?.fach?.value}
 					<div class="badge badge-warning badge-outline">{result?.fach?.value}</div>
 				{/if}
 				{#if result?.jahrgangsstufen?.value}
-					<div class="badge badge-warning badge-outline">{result?.jahrgangsstufen?.value}</div>
+					<div class="badge badge-warning badge-outline">
+						{result?.jahrgangsstufen?.value
+							.split(',')
+							.map(Number)
+							.sort((a, b) => a - b)}
+					</div>
 				{/if}
 			</div>
 		</div>

@@ -1,5 +1,5 @@
 import { writable, get } from 'svelte/store';
-
+import { config } from '$lib/config';
 import { db } from '$lib/db';
 
 export async function queryFTS(search) {
@@ -7,13 +7,11 @@ export async function queryFTS(search) {
 		? get(db)
 				.selectedFilters['fach'].map((f) => `"${f}"`)
 				.join(' ')
-				.replace(/^/, '{')
-				.replace(/$/, '}')
 		: 'UNDEF';
 	const jahrgangsstufeFilter = get(db).selectedFilters['jahrgangsstufe'].length
 		? get(db)
 				.selectedFilters['jahrgangsstufe'].map((f) => `"${f}"`)
-				.join(' ')
+				.join(', ')
 		: '?x';
 	const sparqlQuery = `
 	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -26,7 +24,7 @@ export async function queryFTS(search) {
 	       (GROUP_CONCAT(DISTINCT ?lp; SEPARATOR=", ") AS ?lehrplaene)
 	WHERE {
 	    ?s rdfs:label ?value .
-	    ?value onto:fts "brot" .
+	    ?value onto:fts "${search}" .
 	    ?s lp:partOf* ?lp .
 	    ?s a ?type .
 	    ?lp lp:hatFach ?fach .
@@ -43,10 +41,9 @@ export async function queryFTS(search) {
 	LIMIT 100
 	`;
 	console.log(sparqlQuery);
-	const endpoint = 'http://localhost:7200/repositories/bayern';
 
 	try {
-		const response = await fetch(endpoint, {
+		const response = await fetch(config.endpoint, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/sparql-query',

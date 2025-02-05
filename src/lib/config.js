@@ -14,5 +14,6 @@ export const uriMappings = {
 };
 
 export const config = {
-	filterKeys: ['fach', 'jahrgangsstufe']
+	filterKeys: ['fach', 'jahrgangsstufe'],
+	endpoint: 'https://graphdb.edufeed.org/repositories/bayern'
 };
