@@ -12,10 +12,11 @@
 	>
 		<ul>
 			{#each filter[1] as opt}
-				{@const key = [filter[0]]}
+				{@const key = filter[0]}
 				{@const val = opt[key].value}
+				{@const selected = $db.selectedFilters[key].includes(val)}
 				<li onclick={() => toggleFilter(key, val)}>
-					<a class:bg-red-500={$db.selectedFilters[key].includes(val)}>{val}</a>
+					<a class={selected ? 'bg-orange-400 text-black' : ''}>{val}</a>
 				</li>
 			{/each}
 		</ul>
