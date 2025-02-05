@@ -1,3 +1,5 @@
+import { config } from '$lib/config';
+
 export async function GET({ url }) {
 	const subject = url.searchParams.get('subject');
 	if (!subject) {
@@ -14,10 +16,8 @@ export async function GET({ url }) {
     } limit 100
   `;
 
-	const endpoint = 'http://localhost:7200/repositories/bayern';
-
 	try {
-		const response = await fetch(endpoint, {
+		const response = await fetch(config.endpoint, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/sparql-query',
