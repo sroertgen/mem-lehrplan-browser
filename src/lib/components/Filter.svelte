@@ -12,7 +12,6 @@
 	}
 
 	const filterKey = filter[0];
-	$: console.log($selectedFilters);
 </script>
 
 <div class="dropdown">
