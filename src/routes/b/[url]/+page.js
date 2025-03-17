@@ -1,23 +1,19 @@
 import { error } from '@sveltejs/kit';
 
-async function getSubjectDetails(subject) {
-	try {
-		const res = await fetch(`/api/subjectInfo?subject=${encodeURIComponent(subject)}`);
-		const results = await res.json();
-		return results;
-	} catch (error) {
-		console.error('Error fetching results:', error);
-	}
-}
-
 /** @type {import('./$types').PageLoad} */
-export async function load({ params }) {
-	const subjectInfo = await getSubjectDetails(params.url);
+export async function load({ params, fetch }) {
+	try {
+		const res = await fetch(`/api/subjectInfo?subject=${encodeURIComponent(params.url)}`);
+		const subjectInfo = await res.json();
 
-	if (subjectInfo) {
-		console.log(subjectInfo);
-		return { subjectInfo };
+		if (subjectInfo) {
+			console.log(subjectInfo);
+			return { subjectInfo };
+		}
+
+		error(404, 'Not found');
+	} catch (err) {
+		console.error('Error fetching results:', err);
+		error(500, 'Failed to load data');
 	}
-
-	error(404, 'Not found');
 }
