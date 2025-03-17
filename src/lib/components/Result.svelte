@@ -21,10 +21,17 @@
 <div class="card card-border bg-base-100 w-full md:w-3/4">
 	<div class="card-body">
 		<div class="flex flex-col md:flex-row md:items-center md:justify-between">
-			<h2 class="card-title">{uriMappings[result.type.value] ?? result.type.value}</h2>
+			<h2 class="card-title truncate">
+				{result?.type?.value
+					.split(',')
+					.map((e) => uriMappings[e] || null)
+					.filter((e) => e != null)}
+			</h2>
 			<div class="flex flex-col gap-2 md:flex md:flex-row">
 				{#if result?.fach?.value}
-					<div class="badge badge-warning badge-outline">{result?.fach?.value}</div>
+					<div class="text-warning border-warning rounded-lg border p-1">
+						{result?.fach?.value}
+					</div>
 				{/if}
 				{#if result?.jahrgangsstufen?.value}
 					<div class="badge badge-warning badge-outline">

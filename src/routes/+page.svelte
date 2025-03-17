@@ -1,31 +1,30 @@
 <script>
-	import { db, handleQuery } from '$lib/db';
+	import { onMount } from 'svelte';
+	import { db, allLP, searchTerm, currentPage } from '$lib/db';
+	import Search from '$lib/components/Search.svelte';
+	import Pagination from '$lib/components/Pagination.svelte';
 	import Result from '$lib/components/Result.svelte';
-	import Filter from '$lib/components/Filter.svelte';
 
-	let searchTerm = '';
+	onMount(() => {
+		allLP();
+	});
 </script>
 
 <div class="mt-2 flex w-full flex-col items-center justify-center">
-	<form onsubmit={() => handleQuery(searchTerm)}>
-		<div class="flex flex-col items-center justify-center md:flex md:flex-row">
-			<label for="query"
-				>Wonach suchst du?
-				<input bind:value={searchTerm} id="query" type="text" />
-			</label>
-			<div>
-				{#key $db.filters}
-					{#each $db.filters as filter}
-						<Filter {filter} />
-					{/each}
-				{/key}
-			</div>
-		</div>
-	</form>
-
-	{#if $db.results.length}
-		{#each $db.results as result}
-			<Result {result} search={searchTerm} />
-		{/each}
-	{/if}
+	<h1 class="text-lg font-bold">Vorhandene Fachlehrpläne</h1>
+	<Search />
+	<Pagination />
+	<div class="flex flex-wrap justify-center gap-2">
+		{#if !$db.results.length}
+			{#key $db.lps}
+				{#each $db.lps as result}
+					<Result {result} />
+				{/each}
+			{/key}
+		{:else}
+			{#each $db.results.slice($currentPage, $currentPage + 10) as result}
+				<Result {result} search={$searchTerm} />
+			{/each}
+		{/if}
+	</div>
 </div>

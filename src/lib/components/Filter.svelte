@@ -1,24 +1,37 @@
 <script>
-	import { db, toggleFilter } from '$lib/db';
+	import { toggleFilter, selectedFilters, allLP, currentPage } from '$lib/db';
 	import { capitalize } from '$lib/utils';
 	export let filter;
+
+	const isSelected = (key, val) => $selectedFilters[key].includes(val);
+
+	function getOptValue(opt) {
+		const firstKey = Object.keys(opt)[0];
+		const value = opt[firstKey].value;
+		return value;
+	}
+
+	const filterKey = filter[0];
+	$: console.log($selectedFilters);
 </script>
 
-<details class="dropdown">
-	<summary class="btn m-1">{capitalize(filter[0])}</summary>
-	<div
-		class="menu dropdown-content
-    bg-base-100 rounded-box z-1 max-h-52 w-52 overflow-auto p-2 shadow-sm"
-	>
-		<ul>
-			{#each filter[1] as opt}
-				{@const key = filter[0]}
-				{@const val = opt[key].value}
-				{@const selected = $db.selectedFilters[key].includes(val)}
-				<li onclick={() => toggleFilter(key, val)}>
-					<a class={selected ? 'bg-orange-400 text-black' : ''}>{val}</a>
-				</li>
-			{/each}
-		</ul>
-	</div>
-</details>
+<div class="dropdown">
+	<div tabindex="0" role="button" class="btn m-1">{capitalize(filterKey)}</div>
+	<ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+		{#each filter[1] as opt}
+			{@const value = getOptValue(opt)}
+			{@const selected = isSelected(filterKey, value)}
+			<li>
+				<a
+					class={{ 'bg-orange-500': selected, 'text-black': selected }}
+					on:click={() => {
+						toggleFilter(filterKey, value);
+						currentPage.set(0);
+						allLP();
+					}}
+					>{value}
+				</a>
+			</li>
+		{/each}
+	</ul>
+</div>

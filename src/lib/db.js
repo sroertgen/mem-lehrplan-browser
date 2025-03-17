@@ -1,11 +1,16 @@
 import { writable, get } from 'svelte/store';
 import { config } from '$lib/config';
-import { queryFTS } from '$lib/fts';
+import { queryFTS, queryAllLP } from '$lib/queryBuilder';
+
+export const searchTerm = writable('');
+export const currentPage = writable(0);
+export const filters = writable([]);
+initFilters();
+export const selectedFilters = writable(initSelectedFilters());
 
 export const db = writable({
-	filters: initFilters(),
-	selectedFilters: initSelectedFilters(),
-	results: []
+	results: [],
+	resultsPerPage: 10
 });
 
 export function getDB() {
@@ -27,8 +32,25 @@ async function initFilters() {
 	);
 
 	const jahrgangsstufe = ['jahrgangsstufe', sortedJahrgangsstufe];
-	db.update((db) => {
-		return { ...db, filters: [faecher, jahrgangsstufe] };
+	const bundesland = [
+		'bundesland',
+		[
+			{
+				bundesland: {
+					uri: '',
+					value: 'Alle'
+				}
+			},
+			{
+				bundesland: {
+					uri: 'https://w3id.org/lehrplan/ontology/LP_3000051',
+					value: 'Bayern'
+				}
+			}
+		]
+	];
+	filters.update((filters) => {
+		return [bundesland, faecher, jahrgangsstufe];
 	});
 }
 
@@ -37,20 +59,21 @@ function initSelectedFilters() {
 }
 
 export function toggleFilter(key, val) {
-	let selectedFilters;
-	db.update((db) => {
-		if (db.selectedFilters?.[key]?.includes(val)) {
-			selectedFilters = {
-				...db.selectedFilters,
-				[key]: db.selectedFilters[key].filter((f) => f !== val)
+	selectedFilters.update((sf) => {
+		const current = sf || {};
+		const currentValues = current[key] || [];
+
+		if (currentValues.includes(val)) {
+			return {
+				...current,
+				[key]: currentValues.filter((f) => f !== val)
 			};
 		} else {
-			selectedFilters = {
-				...db.selectedFilters,
-				[key]: [...db.selectedFilters[key], val]
+			return {
+				...current,
+				[key]: [...currentValues, val]
 			};
 		}
-		return { ...db, selectedFilters };
 	});
 }
 
@@ -65,3 +88,28 @@ export async function handleQuery(searchTerm) {
 		console.error('Error fetching results:', error);
 	}
 }
+
+export async function allLP() {
+	try {
+		const offset = get(currentPage) * get(db).resultsPerPage;
+		console.log('offset', offset);
+		const res = await queryAllLP(offset);
+		const lps = await res.json();
+		db.update((db) => {
+			return { ...db, lps };
+		});
+	} catch (error) {
+		console.error('Error fetching results:', error);
+	}
+}
+
+currentPage.subscribe((store) => {
+	allLP();
+});
+
+export const resetFilters = () => {
+	searchTerm.set('');
+	selectedFilters.set(initSelectedFilters());
+	db.update((db) => ({ ...db, results: [] }));
+	allLP();
+};

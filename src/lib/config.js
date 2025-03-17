@@ -10,10 +10,17 @@ export const uriMappings = {
 	'https://w3id.org/lehrplan/ontology/dauer': 'Dauer (h)',
 	'https://w3id.org/lehrplan/ontology/hatSchulart': 'Schulart',
 	'https://w3id.org/lehrplan/ontology/hatJahrgangsstufe': 'Jahrgangsstufe',
-	'https://w3id.org/lehrplan/ontology/hatFach': 'Fach'
+	'https://w3id.org/lehrplan/ontology/hatFach': 'Fach',
+	'http://purl.obolibrary.org/obo/BFO_0000002': 'BFO: Continuant',
+	'http://purl.obolibrary.org/obo/IAO_0000030': 'IAO: Information Content Entity',
+	'http://purl.obolibrary.org/obo/BFO_0000031': 'BFO: Generically Dependent Continuant',
+	'https://w3id.org/lehrplan/ontology/LP_0000261': 'Curriculares Element',
+	'http://purl.obolibrary.org/obo/BFO_0000001': 'BFO: Entity',
+	'https://w3id.org/lehrplan/ontology/LP_0001015': 'CE-Fragment'
 };
 
 export const config = {
-	filterKeys: ['fach', 'jahrgangsstufe'],
-	endpoint: 'https://graphdb.edufeed.org/repositories/bayern'
+	filterKeys: ['fach', 'jahrgangsstufe', 'bundesland'],
+	// endpoint: 'https://graphdb.edufeed.org/repositories/bayern',
+	endpoint: 'http://localhost:7200/repositories/bayern'
 };

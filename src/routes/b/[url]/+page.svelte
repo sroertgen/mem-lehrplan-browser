@@ -5,11 +5,11 @@
 	let { data } = $props();
 </script>
 
-<div class="mx-auto flex w-3/4 flex-col items-center justify-center gap-2">
+<div class="mx-auto flex w-2/3 flex-col items-center justify-center gap-2">
 	<h1 class="text-xl">Details</h1>
 
 	<table
-		class="table-fixed border-separate border-spacing-4 border border-gray-400 dark:border-gray-500"
+		class="w-full table-fixed border-separate border-spacing-4 border border-gray-400 dark:border-gray-500"
 	>
 		<thead> <tr> <th>Attribut</th> <th>Wert</th> </tr> </thead>
 		<tbody>
