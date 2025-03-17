@@ -1,13 +1,19 @@
 <script>
 	import { uriMappings } from '$lib/config.js';
 	import { isValidURI } from '$lib/utils';
+	import Home from '$lib/icons/Home.svelte';
+
 	/** @type {import('./$types').PageProps} */
 	let { data } = $props();
 </script>
 
 <div class="mx-auto flex w-2/3 flex-col items-center justify-center gap-2">
-	<h1 class="text-xl">Details</h1>
-
+	<div class="relative mt-1 flex w-full flex-row items-center">
+		<div class="mr-auto">
+			<a class="btn btn-circle btn-outline" href="/"><Home /></a>
+		</div>
+		<div class="absolute left-1/2 -translate-x-1/2 transform text-lg">Details</div>
+	</div>
 	<table
 		class="w-full table-fixed border-separate border-spacing-4 border border-gray-400 dark:border-gray-500"
 	>
