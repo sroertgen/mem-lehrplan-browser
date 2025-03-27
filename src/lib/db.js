@@ -2,6 +2,8 @@ import { writable, get } from 'svelte/store';
 import { config } from '$lib/config';
 import { queryFTS, queryAllLP } from '$lib/queryBuilder';
 
+/** @typedef {import('./types.js').FilterItem} FilterItem */
+
 export const searchTerm = writable('');
 export const currentPage = writable(0);
 export const filters = writable([]);
@@ -17,38 +19,30 @@ export function getDB() {
 	return get(db);
 }
 
+async function getFilter(filterQuery, filterLabel) {
+	const faecherRaw = await fetch(`/api/getFilters?filter=${filterQuery}`);
+
+	/**
+	 * List of subjects/categories fetched from the API
+	 * @type {FilterItem[]}
+	 */
+	const filterItems = await faecherRaw.json();
+	const sortedFilterItems = filterItems.sort((a, b) =>
+		a.label.value.localeCompare(b.label.value, 'de', { sensitivity: 'base' })
+	);
+	const filter = [filterLabel, sortedFilterItems];
+	return filter;
+}
+
 async function initFilters() {
-	const faecherRaw = await fetch(`/api/getFilters?filter=${'fach'}`);
-	const faecherList = await faecherRaw.json();
-	const sortedFaecher = faecherList.sort((a, b) =>
-		a.fach.value.localeCompare(b.fach.value, 'de', { sensitivity: 'base' })
-	);
-	const faecher = ['fach', sortedFaecher];
+	const filtersToGet = ['fach', 'jahrgangsstufe', 'bundesland'];
 
-	const jahrgangsstufeRaw = await fetch(`/api/getFilters?filter=${'jahrgangsstufe'}`);
-	const jahrgangsstufeList = await jahrgangsstufeRaw.json();
-	const sortedJahrgangsstufe = jahrgangsstufeList.sort(
-		(a, b) => Number(a.jahrgangsstufe.value) - Number(b.jahrgangsstufe.value)
-	);
+	const filterPromises = filtersToGet.map(async (filterType) => {
+		return await getFilter(filterType, filterType);
+	});
 
-	const jahrgangsstufe = ['jahrgangsstufe', sortedJahrgangsstufe];
-	const bundesland = [
-		'bundesland',
-		[
-			{
-				bundesland: {
-					uri: '',
-					value: 'Alle'
-				}
-			},
-			{
-				bundesland: {
-					uri: 'https://w3id.org/lehrplan/ontology/LP_3000051',
-					value: 'Bayern'
-				}
-			}
-		]
-	];
+	const [faecher, jahrgangsstufe, bundesland] = await Promise.all(filterPromises);
+
 	filters.update((filters) => {
 		return [bundesland, faecher, jahrgangsstufe];
 	});
@@ -58,6 +52,10 @@ function initSelectedFilters() {
 	return Object.fromEntries(config.filterKeys.map((e) => [e, []]));
 }
 
+/**
+ * @param {string} key
+ * @param {FilterItem} val
+ */
 export function toggleFilter(key, val) {
 	selectedFilters.update((sf) => {
 		const current = sf || {};

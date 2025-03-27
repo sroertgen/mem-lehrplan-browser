@@ -1,5 +1,11 @@
 import { config } from '$lib/config';
 
+const PREFIXES = `
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lp: <https://w3id.org/lehrplan/ontology/>
+PREFIX onto: <http://www.ontotext.com/>
+`;
+
 export async function GET({ url }) {
 	const filter = url.searchParams.get('filter');
 	if (!filter) {
@@ -8,25 +14,34 @@ export async function GET({ url }) {
 
 	const sparqlQuery = {
 		fach: `
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-          PREFIX lp: <https://w3id.org/lehrplan/ontology/>
-          PREFIX onto: <http://www.ontotext.com/>
-
-          SELECT DISTINCT ?fach
-          WHERE {
-              ?s lp:hatFach ?fach .
-          }
-  `,
+${PREFIXES}
+SELECT DISTINCT ?uri ?label
+WHERE {
+    ?s lp:LP_0000537 ?uri .
+    ?uri rdfs:label ?label .
+}
+`,
 		jahrgangsstufe: `
-          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-          PREFIX lp: <https://w3id.org/lehrplan/ontology/>
-          PREFIX onto: <http://www.ontotext.com/>
+${PREFIXES}
+SELECT DISTINCT ?uri ?label
+WHERE {
+    ?s lp:LP_0000026 ?uri .
+    ?uri rdfs:label ?label .
+    # only german labels    
+    FILTER(lang(?label) = "de")
+}
+`,
+		bundesland: `
+${PREFIXES}
+SELECT DISTINCT ?uri ?label
+WHERE {
+    ?s lp:LP_0000029 ?uri .
+    ?uri rdfs:label ?label .
+    
 
-          SELECT DISTINCT ?jahrgangsstufe
-          WHERE {
-              ?s lp:hatJahrgangsstufe ?jahrgangsstufe .
-          }
-  `
+    FILTER(lang(?label) = "de")
+}
+`
 	};
 
 	try {

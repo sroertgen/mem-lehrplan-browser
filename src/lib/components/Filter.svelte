@@ -4,13 +4,6 @@
 	export let filter;
 
 	const isSelected = (key, val) => $selectedFilters[key].includes(val);
-
-	function getOptValue(opt) {
-		const firstKey = Object.keys(opt)[0];
-		const value = opt[firstKey].value;
-		return value;
-	}
-
 	const filterKey = filter[0];
 </script>
 
@@ -18,17 +11,16 @@
 	<div tabindex="0" role="button" class="btn m-1">{capitalize(filterKey)}</div>
 	<ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
 		{#each filter[1] as opt}
-			{@const value = getOptValue(opt)}
-			{@const selected = isSelected(filterKey, value)}
+			{@const selected = isSelected(filterKey, opt)}
 			<li>
 				<a
 					class={{ 'bg-orange-500': selected, 'text-black': selected }}
 					on:click={() => {
-						toggleFilter(filterKey, value);
+						toggleFilter(filterKey, opt);
 						currentPage.set(0);
 						allLP();
 					}}
-					>{value}
+					>{opt.label.value}
 				</a>
 			</li>
 		{/each}

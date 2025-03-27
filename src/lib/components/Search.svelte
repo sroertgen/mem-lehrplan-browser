@@ -1,6 +1,8 @@
 <script>
 	import { db, filters, handleQuery, searchTerm, selectedFilters, resetFilters } from '$lib/db';
 	import Filter from '$lib/components/Filter.svelte';
+
+	/** @typedef {import('$lib/types.js').FilterItem} FilterItem */
 </script>
 
 <div class="mt-2 flex w-full flex-col items-center justify-center">
@@ -32,10 +34,12 @@
 				{/key}
 			</div>
 		</div>
+
+		<!-- Selected Filter -->
 		<div class="flex flex-row flex-wrap gap-1">
 			{#each Object.entries($selectedFilters) as [key, val]}
 				{#each val as v}
-					<span class="border-warning text-warning rounded-lg border p-1">{v}</span>
+					<span class="border-warning text-warning rounded-lg border p-1">{v.label.value}</span>
 				{/each}
 			{/each}
 		</div>

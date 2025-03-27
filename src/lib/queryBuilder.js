@@ -2,6 +2,8 @@ import { writable, get } from 'svelte/store';
 import { config } from '$lib/config';
 import { db, selectedFilters } from '$lib/db';
 
+/** @typedef {import('./types.js').FilterItem} FilterItem */
+
 const PREFIXES = `
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX lp: <https://w3id.org/lehrplan/ontology/>
@@ -11,23 +13,31 @@ PREFIX onto: <http://www.ontotext.com/>
 const subjectsFilter = () =>
 	get(selectedFilters)['fach'].length
 		? get(selectedFilters)
-				['fach'].map((f) => `"${f}"`)
+				['fach'].map(
+					/** @param {FilterItem} f */
+					(f) => `<${f.uri.value}>`
+				)
 				.join(' ')
-		: 'UNDEF';
+		: '?y';
 
 const jahrgangsstufeFilter = () =>
+	/** @type {FilterItem[]} */
 	get(selectedFilters)['jahrgangsstufe'].length
 		? get(selectedFilters)
-				['jahrgangsstufe'].map((f) => `"${f}"`)
+				['jahrgangsstufe'].map(
+					/** @param {FilterItem} f */
+					(f) => `<${f.uri.value}>`
+				)
 				.join(', ')
 		: '?x';
 
 const bundeslandFilter = () => {};
 
 const filterQuery = () => `
-VALUES ?fach { ${subjectsFilter()} }
+#VALUES ?fach { ${subjectsFilter()} }
+FILTER(lang(?jahrgangsstufeLabel) = "de")
 FILTER EXISTS {
-  ?lp lp:hatJahrgangsstufe ${jahrgangsstufeFilter()}
+  ?lp lp:LP_0000026 ${jahrgangsstufeFilter()} .
 }
 `;
 
@@ -58,23 +68,25 @@ async function executeQuery(sparqlQuery) {
 export async function queryAllLP(offset = 0) {
 	const sparqlQuery = `
 ${PREFIXES}
-select distinct ?s ?value ?fach
-(GROUP_CONCAT(DISTINCT ?jahrgangsstufe; SEPARATOR=", ") AS ?jahrgangsstufen)
+select distinct ?s ?value ?fach ?fachLabel ?jahrgangsstufeLabel
+(GROUP_CONCAT(DISTINCT ?jahrgangsstufeLabel; SEPARATOR=", ") AS ?jahrgangsstufenLabels)
 (GROUP_CONCAT(DISTINCT ?type; SEPARATOR=", ") AS ?type)
 
 where {
   ?s a <https://w3id.org/lehrplan/ontology/LP_0002043> ;
     a ?type ;
     rdfs:label ?value ;
-    lp:hatJahrgangsstufe ?jahrgangsstufe ;
-    lp:hatFach ?fach ; 
-    lp:hatSchulart ?schulart .
+    lp:LP_0000026 ?jahrgangsstufe ;
+    lp:LP_0000537 ?fach ; 
+    lp:LP_0000812 ?schulart .
+  ?fach rdfs:label ?fachLabel .
+  ?jahrgangsstufe rdfs:label ?jahrgangsstufeLabel .
 
     ${filterQuery()}
 
   }
-GROUP BY ?fach ?value ?s 
-ORDER BY ASC(?fach)
+GROUP BY ?fachLabel ?fach ?jahrgangsstufeLabel ?value ?s 
+ORDER BY ASC(?fachLabel)
 LIMIT 10
 OFFSET ${offset}
 
@@ -96,12 +108,10 @@ WHERE {
     ?value onto:fts \"${search}*\" .
     ?s lp:partOf* ?lp .
     ?s a ?type .
-    ?lp lp:hatFach ?fach .
-    ?lp lp:hatJahrgangsstufe ?jahrgangsstufe .
 
     VALUES ?fach { ${subjectsFilter()} }
     FILTER EXISTS {
-      ?lp lp:hatJahrgangsstufe ${jahrgangsstufeFilter()}
+      ?lp lp:LP_0000026 ${jahrgangsstufeFilter()}
     }
 
 }

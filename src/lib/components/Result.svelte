@@ -28,17 +28,14 @@
 					.filter((e) => e != null)}
 			</h2>
 			<div class="flex flex-col gap-2 md:flex md:flex-row">
-				{#if result?.fach?.value}
+				{#if result?.fachLabel?.value}
 					<div class="text-warning border-warning rounded-lg border p-1">
-						{result?.fach?.value}
+						{result?.fachLabel.value}
 					</div>
 				{/if}
-				{#if result?.jahrgangsstufen?.value}
+				{#if result?.jahrgangsstufenLabels?.value}
 					<div class="badge badge-warning badge-outline">
-						{result?.jahrgangsstufen?.value
-							.split(',')
-							.map(Number)
-							.sort((a, b) => a - b)}
+						{result?.jahrgangsstufenLabels?.value}
 					</div>
 				{/if}
 			</div>
