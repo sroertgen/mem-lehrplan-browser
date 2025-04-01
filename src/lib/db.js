@@ -19,6 +19,7 @@ const filterIsSelected = derived(selectedFilters, ($selectedFilters) => {
 	const someSelected = Boolean(Object.values($selectedFilters).flat().length);
 	return someSelected;
 });
+export const totalResults = writable(0);
 
 export const db = writable({
 	results: [],
@@ -94,11 +95,14 @@ export function toggleFilter(key, val) {
 			};
 		}
 	});
+	currentPage.set(0);
+	handleQuery();
 }
 
 export async function handleQuery() {
 	try {
 		const offset = get(currentPage) * get(db).resultsPerPage;
+		console.log(offset);
 		const searchVal = get(searchTerm);
 		let res;
 		if (searchVal || get(filterIsSelected)) {
@@ -107,6 +111,11 @@ export async function handleQuery() {
 			res = await queryAllLP(offset);
 		}
 		const results = await res.json();
+
+		if (get(currentPage) === 0) {
+			totalResults.set(results.length);
+		}
+
 		db.update((db) => {
 			return { ...db, results };
 		});
@@ -115,7 +124,8 @@ export async function handleQuery() {
 	}
 }
 
-currentPage.subscribe((store) => {
+// Handle Query after button click
+currentPage.subscribe(() => {
 	handleQuery();
 });
 

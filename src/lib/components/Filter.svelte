@@ -17,8 +17,6 @@
 					class={{ 'bg-orange-500': selected, 'text-black': selected }}
 					on:click={() => {
 						toggleFilter(filterKey, opt);
-						currentPage.set(0);
-						handleQuery();
 					}}
 					>{opt.label.value}
 				</a>

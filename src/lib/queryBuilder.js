@@ -12,13 +12,14 @@ PREFIX onto: <http://www.ontotext.com/>
 
 const subjectsFilter = () => {
 	const filter = get(selectedFilters)['fach'];
+	console.log(filter);
 	const filterLen = filter.length;
 	if (filterLen === 0) {
 		return '?lp lp:LP_0000537 ?fach .';
 	} else if (filterLen === 1) {
 		return `?lp lp:LP_0000537 <${filter[0].uri.value}> .`;
 	} else {
-		filter
+		return filter
 			.map(
 				/** @param {FilterItem} f */
 				(f) => `\n{ ?lp lp:LP_0000537 <${f.uri.value}> .}\n`
@@ -38,16 +39,6 @@ const jahrgangsstufeFilter = () =>
 				.join('\nUNION\n')
 		: '?lp lp:LP_0000026 ?x .';
 
-const bundeslandFilter = () => {};
-
-const filterQuery = () => `
-#VALUES ?fach { ${subjectsFilter()} }
-FILTER(lang(?jahrgangsstufeLabel) = "de")
-FILTER EXISTS {
-  ?lp lp:LP_0000026 ${jahrgangsstufeFilter()} .
-}
-`;
-
 async function executeQuery(sparqlQuery) {
 	try {
 		const response = await fetch(config.endpoint, {
@@ -64,6 +55,7 @@ async function executeQuery(sparqlQuery) {
 		}
 
 		const data = await response.json();
+		console.log('result length', data.results.bindings.length);
 		return new Response(JSON.stringify(data.results.bindings), {
 			headers: { 'Content-Type': 'application/json' }
 		});
@@ -81,8 +73,8 @@ where {
   ?s a <https://w3id.org/lehrplan/ontology/LP_0002043> .
   ?s lp:partOf* ?lp .
   }
-LIMIT 10
-OFFSET ${offset}
+#LIMIT 10
+#OFFSET ${offset}
 `;
 	console.log(sparqlQuery);
 	const result = await executeQuery(sparqlQuery);
@@ -101,7 +93,7 @@ WHERE {
     ${jahrgangsstufeFilter()}
 
 }
-LIMIT 10
+#LIMIT 10
 OFFSET ${offset}
 	`;
 	console.log(sparqlQuery);

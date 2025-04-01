@@ -1,5 +1,5 @@
 <script>
-	import { currentPage, db } from '$lib/db';
+	import { currentPage, db, totalResults } from '$lib/db';
 </script>
 
 <div class="join">
@@ -19,5 +19,5 @@
 	>
 </div>
 {#if $db.results.length}
-	<p>Ergebnisse: {$db.results.length}</p>
+	<p>Ergebnisse: {$totalResults}</p>
 {/if}

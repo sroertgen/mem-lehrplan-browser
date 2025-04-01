@@ -1,5 +1,13 @@
 <script>
-	import { db, filters, handleQuery, searchTerm, selectedFilters, resetFilters } from '$lib/db';
+	import {
+		db,
+		filters,
+		handleQuery,
+		searchTerm,
+		selectedFilters,
+		resetFilters,
+		toggleFilter
+	} from '$lib/db';
 	import Filter from '$lib/components/Filter.svelte';
 
 	/** @typedef {import('$lib/types.js').FilterItem} FilterItem */
@@ -39,7 +47,10 @@
 		<div class="flex flex-row flex-wrap gap-1">
 			{#each Object.entries($selectedFilters) as [key, val]}
 				{#each val as v}
-					<span class="border-warning text-warning rounded-lg border p-1">{v.label.value}</span>
+					<span
+						class="border-warning text-warning cursor-pointer rounded-lg border p-1"
+						onclick={() => toggleFilter(key, v)}>{v.label.value}</span
+					>
 				{/each}
 			{/each}
 		</div>
