@@ -1,5 +1,5 @@
 <script>
-	import { toggleFilter, selectedFilters, allLP, currentPage } from '$lib/db';
+	import { toggleFilter, selectedFilters, currentPage, handleQuery } from '$lib/db';
 	import { capitalize } from '$lib/utils';
 	export let filter;
 
@@ -18,7 +18,7 @@
 					on:click={() => {
 						toggleFilter(filterKey, opt);
 						currentPage.set(0);
-						allLP();
+						handleQuery();
 					}}
 					>{opt.label.value}
 				</a>

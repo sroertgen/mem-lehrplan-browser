@@ -14,6 +14,9 @@
 		</div>
 		<div class="absolute left-1/2 -translate-x-1/2 transform text-lg">Details</div>
 	</div>
+	<div class="mx-auto select-all">
+		<p>{data.url}</p>
+	</div>
 	<table
 		class="w-full table-fixed border-separate border-spacing-4 border border-gray-400 dark:border-gray-500"
 	>

@@ -1,14 +1,24 @@
-import { writable, get } from 'svelte/store';
+import { writable, get, derived } from 'svelte/store';
 import { config } from '$lib/config';
 import { queryFTS, queryAllLP } from '$lib/queryBuilder';
 
-/** @typedef {import('./types.js').FilterItem} FilterItem */
+/**
+ * @typedef {import('svelte/store').Readable} Readable
+ * @typedef {import('svelte/store').Readable<boolean>} ReadableBoolean
+ * @typedef {import('./types.js').FilterItem} FilterItem
+ */
 
 export const searchTerm = writable('');
 export const currentPage = writable(0);
 export const filters = writable([]);
 initFilters();
 export const selectedFilters = writable(initSelectedFilters());
+export const uri2label = writable({});
+/** @type {ReadableBoolean} */
+const filterIsSelected = derived(selectedFilters, ($selectedFilters) => {
+	const someSelected = Boolean(Object.values($selectedFilters).flat().length);
+	return someSelected;
+});
 
 export const db = writable({
 	results: [],
@@ -43,6 +53,17 @@ async function initFilters() {
 
 	const [faecher, jahrgangsstufe, bundesland] = await Promise.all(filterPromises);
 
+	uri2label.update((uri2label) => {
+		return Object.assign(
+			{},
+			...[
+				...faecher[1].map((e) => ({ [e.uri.value]: e.label.value })),
+				...jahrgangsstufe[1].map((e) => ({ [e.uri.value]: e.label.value })),
+				...bundesland[1].map((e) => ({ [e.uri.value]: e.label.value }))
+			].flat()
+		);
+	});
+
 	filters.update((filters) => {
 		return [bundesland, faecher, jahrgangsstufe];
 	});
@@ -75,9 +96,16 @@ export function toggleFilter(key, val) {
 	});
 }
 
-export async function handleQuery(searchTerm) {
+export async function handleQuery() {
 	try {
-		const res = await queryFTS(searchTerm);
+		const offset = get(currentPage) * get(db).resultsPerPage;
+		const searchVal = get(searchTerm);
+		let res;
+		if (searchVal || get(filterIsSelected)) {
+			res = await queryFTS(searchVal, offset);
+		} else {
+			res = await queryAllLP(offset);
+		}
 		const results = await res.json();
 		db.update((db) => {
 			return { ...db, results };
@@ -87,27 +115,13 @@ export async function handleQuery(searchTerm) {
 	}
 }
 
-export async function allLP() {
-	try {
-		const offset = get(currentPage) * get(db).resultsPerPage;
-		console.log('offset', offset);
-		const res = await queryAllLP(offset);
-		const lps = await res.json();
-		db.update((db) => {
-			return { ...db, lps };
-		});
-	} catch (error) {
-		console.error('Error fetching results:', error);
-	}
-}
-
 currentPage.subscribe((store) => {
-	allLP();
+	handleQuery();
 });
 
 export const resetFilters = () => {
 	searchTerm.set('');
 	selectedFilters.set(initSelectedFilters());
 	db.update((db) => ({ ...db, results: [] }));
-	allLP();
+	handleQuery();
 };

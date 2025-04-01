@@ -1,12 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { db, allLP, searchTerm, currentPage } from '$lib/db';
+	import { db, searchTerm, currentPage, handleQuery } from '$lib/db';
 	import Search from '$lib/components/Search.svelte';
 	import Pagination from '$lib/components/Pagination.svelte';
 	import Result from '$lib/components/Result.svelte';
 
 	onMount(() => {
-		allLP();
+		handleQuery();
 	});
 </script>
 

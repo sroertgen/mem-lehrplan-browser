@@ -10,15 +10,22 @@ PREFIX lp: <https://w3id.org/lehrplan/ontology/>
 PREFIX onto: <http://www.ontotext.com/>
 `;
 
-const subjectsFilter = () =>
-	get(selectedFilters)['fach'].length
-		? get(selectedFilters)
-				['fach'].map(
-					/** @param {FilterItem} f */
-					(f) => `<${f.uri.value}>`
-				)
-				.join(' ')
-		: '?y';
+const subjectsFilter = () => {
+	const filter = get(selectedFilters)['fach'];
+	const filterLen = filter.length;
+	if (filterLen === 0) {
+		return '?lp lp:LP_0000537 ?fach .';
+	} else if (filterLen === 1) {
+		return `?lp lp:LP_0000537 <${filter[0].uri.value}> .`;
+	} else {
+		filter
+			.map(
+				/** @param {FilterItem} f */
+				(f) => `\n{ ?lp lp:LP_0000537 <${f.uri.value}> .}\n`
+			)
+			.join('\nUNION\n');
+	}
+};
 
 const jahrgangsstufeFilter = () =>
 	/** @type {FilterItem[]} */
@@ -26,10 +33,10 @@ const jahrgangsstufeFilter = () =>
 		? get(selectedFilters)
 				['jahrgangsstufe'].map(
 					/** @param {FilterItem} f */
-					(f) => `<${f.uri.value}>`
+					(f) => `\n{ ?lp lp:LP_0000026 <${f.uri.value}> .}\n`
 				)
-				.join(', ')
-		: '?x';
+				.join('\nUNION\n')
+		: '?lp lp:LP_0000026 ?x .';
 
 const bundeslandFilter = () => {};
 
@@ -68,56 +75,34 @@ async function executeQuery(sparqlQuery) {
 export async function queryAllLP(offset = 0) {
 	const sparqlQuery = `
 ${PREFIXES}
-select distinct ?s ?value ?fach ?fachLabel ?jahrgangsstufeLabel
-(GROUP_CONCAT(DISTINCT ?jahrgangsstufeLabel; SEPARATOR=", ") AS ?jahrgangsstufenLabels)
-(GROUP_CONCAT(DISTINCT ?type; SEPARATOR=", ") AS ?type)
+select distinct ?s ?lp
 
 where {
-  ?s a <https://w3id.org/lehrplan/ontology/LP_0002043> ;
-    a ?type ;
-    rdfs:label ?value ;
-    lp:LP_0000026 ?jahrgangsstufe ;
-    lp:LP_0000537 ?fach ; 
-    lp:LP_0000812 ?schulart .
-  ?fach rdfs:label ?fachLabel .
-  ?jahrgangsstufe rdfs:label ?jahrgangsstufeLabel .
-
-    ${filterQuery()}
-
+  ?s a <https://w3id.org/lehrplan/ontology/LP_0002043> .
+  ?s lp:partOf* ?lp .
   }
-GROUP BY ?fachLabel ?fach ?jahrgangsstufeLabel ?value ?s 
-ORDER BY ASC(?fachLabel)
 LIMIT 10
 OFFSET ${offset}
-
 `;
 	console.log(sparqlQuery);
 	const result = await executeQuery(sparqlQuery);
 	return result;
 }
 
-export async function queryFTS(search) {
+export async function queryFTS(search, offset = 0) {
 	const sparqlQuery = `
 ${PREFIXES}
-SELECT ?s ?value ?fach
-       (GROUP_CONCAT(DISTINCT ?jahrgangsstufe; SEPARATOR=", ") AS ?jahrgangsstufen)
-       (GROUP_CONCAT(DISTINCT ?type; SEPARATOR=", ") AS ?type)
-       (GROUP_CONCAT(DISTINCT ?lp; SEPARATOR=", ") AS ?lehrplaene)
+SELECT ?s ?lp
 WHERE {
     ?s rdfs:label ?value .
-    ?value onto:fts \"${search}*\" .
+    ${search ? `?value onto:fts "${search}*" .` : ''}
     ?s lp:partOf* ?lp .
-    ?s a ?type .
-
-    VALUES ?fach { ${subjectsFilter()} }
-    FILTER EXISTS {
-      ?lp lp:LP_0000026 ${jahrgangsstufeFilter()}
-    }
+    ${subjectsFilter()} 
+    ${jahrgangsstufeFilter()}
 
 }
-GROUP BY ?s ?value ?fach
-ORDER BY ?fach
-# LIMIT100
+LIMIT 10
+OFFSET ${offset}
 	`;
 	console.log(sparqlQuery);
 	const result = await executeQuery(sparqlQuery);

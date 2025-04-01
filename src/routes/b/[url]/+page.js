@@ -7,8 +7,7 @@ export async function load({ params, fetch }) {
 		const subjectInfo = await res.json();
 
 		if (subjectInfo) {
-			console.log(subjectInfo);
-			return { subjectInfo };
+			return { subjectInfo, url: params.url };
 		}
 
 		error(404, 'Not found');
