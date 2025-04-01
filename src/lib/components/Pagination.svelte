@@ -18,6 +18,3 @@
 		class="join-item btn">»</button
 	>
 </div>
-{#if $db.results.length}
-	<p>Ergebnisse: {$totalResults}</p>
-{/if}

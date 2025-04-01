@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { writable, get, derived } from 'svelte/store';
 import { config } from '$lib/config';
 import { queryFTS, queryAllLP } from '$lib/queryBuilder';
@@ -20,6 +21,7 @@ const filterIsSelected = derived(selectedFilters, ($selectedFilters) => {
 	return someSelected;
 });
 export const totalResults = writable(0);
+export const sideBarOpen = writable(false);
 
 export const db = writable({
 	results: [],
@@ -46,6 +48,7 @@ async function getFilter(filterQuery, filterLabel) {
 }
 
 async function initFilters() {
+	if (!browser) return;
 	const filtersToGet = ['fach', 'jahrgangsstufe', 'bundesland'];
 
 	const filterPromises = filtersToGet.map(async (filterType) => {
@@ -83,10 +86,10 @@ export function toggleFilter(key, val) {
 		const current = sf || {};
 		const currentValues = current[key] || [];
 
-		if (currentValues.includes(val)) {
+		if (currentValues.find((e) => e.uri.value === val.uri.value)) {
 			return {
 				...current,
-				[key]: currentValues.filter((f) => f !== val)
+				[key]: currentValues.filter((f) => f.uri.value !== val.uri.value)
 			};
 		} else {
 			return {

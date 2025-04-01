@@ -1,4 +1,6 @@
 /** @typedef {import('./types.js').ResultItem} ResultItem */
+import { get } from 'svelte/store';
+import { uri2label } from './db.js';
 
 export function isValidURI(value) {
 	try {
@@ -13,7 +15,7 @@ export const capitalize = (s) => s && String(s[0]).toUpperCase() + String(s).sli
 
 /**
  * Function to merge the array into a single object with arrays of values
- * @returns {ResultItem}
+ * @returns {ResultItem[]}
  */
 
 export function mergeQueryResult(bindings) {
@@ -45,6 +47,16 @@ export function mergeQueryResult(bindings) {
 			return true;
 		});
 	}
+	const urimappings = get(uri2label);
+	uniqueValues.subject = uniqueValues.subject.map((e) => ({
+		label: { type: 'literal', value: urimappings[e.value] },
+		uri: { type: e.type, value: e.value }
+	}));
+	uniqueValues.classLevel = uniqueValues.classLevel.map((e) => ({
+		label: { type: 'literal', value: urimappings[e.value] },
+		uri: { type: e.type, value: e.value }
+	}));
 
+	console.log(uniqueValues);
 	return uniqueValues;
 }

@@ -1,7 +1,7 @@
 import { config } from '$lib/config';
 import { mergeQueryResult } from '$lib/utils';
 
-export async function GET({ url }) {
+export async function GET({ fetch, url }) {
 	const subject = url.searchParams.get('subject');
 	const lp = url.searchParams.get('lp');
 	if (!subject) {
@@ -40,7 +40,6 @@ FILTER(STRSTARTS(STR(?type), STR(lp:)))
 		}
 
 		const data = await response.json();
-		console.log('data', data);
 		const merged = mergeQueryResult(data.results.bindings);
 		return new Response(JSON.stringify(merged), {
 			headers: { 'Content-Type': 'application/json' }

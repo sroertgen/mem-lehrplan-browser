@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { config } from '$lib/config';
-import { db, selectedFilters } from '$lib/db';
+import { selectedFilters } from '$lib/db';
 
 /** @typedef {import('./types.js').FilterItem} FilterItem */
 
@@ -10,9 +10,25 @@ PREFIX lp: <https://w3id.org/lehrplan/ontology/>
 PREFIX onto: <http://www.ontotext.com/>
 `;
 
+const bundeslandFilter = () => {
+	const filter = get(selectedFilters)['bundesland'];
+	const filterLen = filter.length;
+	if (filterLen === 0) {
+		return '?lp lp:LP_0000029 ?bundesland .';
+	} else if (filterLen === 1) {
+		return `?lp lp:LP_0000029 <${filter[0].uri.value}> .`;
+	} else {
+		return filter
+			.map(
+				/** @param {FilterItem} f */
+				(f) => `\n{ ?lp lp:LP_0000029 <${f.uri.value}> .}\n`
+			)
+			.join('\nUNION\n');
+	}
+};
+
 const subjectsFilter = () => {
 	const filter = get(selectedFilters)['fach'];
-	console.log(filter);
 	const filterLen = filter.length;
 	if (filterLen === 0) {
 		return '?lp lp:LP_0000537 ?fach .';
@@ -64,7 +80,7 @@ async function executeQuery(sparqlQuery) {
 	}
 }
 
-export async function queryAllLP(offset = 0) {
+export async function queryAllLP() {
 	const sparqlQuery = `
 ${PREFIXES}
 select distinct ?s ?lp
@@ -73,14 +89,13 @@ where {
   ?s a <https://w3id.org/lehrplan/ontology/LP_0002043> .
   ?s lp:partOf* ?lp .
   }
-#LIMIT 10
-#OFFSET ${offset}
 `;
 	console.log(sparqlQuery);
 	const result = await executeQuery(sparqlQuery);
 	return result;
 }
 
+// TODO if search and filters are empty only query Lehrpläne?
 export async function queryFTS(search, offset = 0) {
 	const sparqlQuery = `
 ${PREFIXES}
@@ -89,11 +104,11 @@ WHERE {
     ?s rdfs:label ?value .
     ${search ? `?value onto:fts "${search}*" .` : ''}
     ?s lp:partOf* ?lp .
+    ${bundeslandFilter()}
     ${subjectsFilter()} 
     ${jahrgangsstufeFilter()}
 
 }
-#LIMIT 10
 OFFSET ${offset}
 	`;
 	console.log(sparqlQuery);

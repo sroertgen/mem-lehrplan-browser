@@ -8,13 +8,7 @@
 </script>
 
 <div class="mx-auto flex w-2/3 flex-col items-center justify-center gap-2">
-	<div class="relative mt-1 flex w-full flex-row items-center">
-		<div class="mr-auto">
-			<a class="btn btn-circle btn-outline" href="/"><Home /></a>
-		</div>
-		<div class="absolute left-1/2 -translate-x-1/2 transform text-lg">Details</div>
-	</div>
-	<div class="mx-auto select-all">
+	<div class="mx-auto mt-1 select-all">
 		<p>{data.url}</p>
 	</div>
 	<table
