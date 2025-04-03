@@ -1,11 +1,5 @@
 import { config } from '$lib/config';
 
-const PREFIXES = `
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX lp: <https://w3id.org/lehrplan/ontology/>
-PREFIX onto: <http://www.ontotext.com/>
-`;
-
 /** @typedef {import('$lib/types.js').FilterItem} FilterItem */
 
 /**
@@ -33,7 +27,7 @@ PREFIX onto: <http://www.ontotext.com/>
 export async function GET({ url }) {
 	const state = url.searchParams.get('state');
 	const sparqlQuery = `
-${PREFIXES}
+${config.prefixes}
 SELECT DISTINCT ?uri ?label
 WHERE {
   ?s lp:LP_0000029 ?uri .

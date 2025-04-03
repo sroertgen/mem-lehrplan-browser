@@ -1,24 +1,12 @@
 import { config } from '$lib/config';
 
-/** @typedef {import('$lib/types.js').FilterItem} FilterItem */
-
 /**
  * Retrieves URI and label pairs based on optional state filter.
  *
  * @route GET /api/your-endpoint
  * @query {string} [state] - Optional state URI to filter results
- * @return {Promise<FilterItem[]>} Array of objects containing uri and label properties
+ * @query {string} [limit] - Optional limit parameter to limit results
  * @example
- * // Request: GET /api/your-endpoint?state=http://example.org/states/california
- * // Response:
- * [
- *   { "uri": { "type": "uri", "value": "http://example.org/resource1" },
- *     "label": { "type": "literal", "value": "Resource 1" }
- *   },
- *   { "uri": { "type": "uri", "value": "http://example.org/resource2" },
- *     "label": { "type": "literal", "value": "Resource 2" }
- *   }
- * ]
  *
  * @throws {Error} 500 - If SPARQL query execution fails
  *
@@ -26,16 +14,20 @@ import { config } from '$lib/config';
  */
 export async function GET({ url }) {
 	const state = url.searchParams.get('state');
+	const limit = url.searchParams.get('limit');
 	const sparqlQuery = `
 ${config.prefixes}
-SELECT DISTINCT ?uri ?label
+SELECT DISTINCT ?s ?lp
+
 WHERE {
-  ?s lp:LP_0000026 ?uri .
-  ?uri rdfs:label ?label .
+  ?s a <https://w3id.org/lehrplan/ontology/LP_0000438> .
   ${state ? `?s lp:LP_0000029 <${state}> .` : ''}
-  # only german labels    
-  FILTER(lang(?label) = "de")
-}`;
+  BIND (?s AS ?lp)
+}
+
+${limit ? `LIMIT ${limit}` : ''}
+
+`;
 	try {
 		const response = await fetch(config.endpoint, {
 			method: 'POST',

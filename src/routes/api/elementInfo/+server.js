@@ -9,10 +9,7 @@ export async function GET({ fetch, url }) {
 	}
 
 	const sparqlQuery = `
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX lp: <https://w3id.org/lehrplan/ontology/>
-PREFIX onto: <http://www.ontotext.com/>
-
+${config.prefixes}
 select ?label ?subject ?classLevel ?type ?state
 where {
     <${element}> a ?type ;

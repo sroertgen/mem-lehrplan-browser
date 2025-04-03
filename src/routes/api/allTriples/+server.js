@@ -7,14 +7,12 @@ export async function GET({ url }) {
 	}
 
 	const sparqlQuery = `
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX lp: <https://w3id.org/lehrplan/ontology/>
-    PREFIX onto: <http://www.ontotext.com/>
-
-    select * where {
-    <${subject}> ?p ?o  .
-    } limit 100
-  `;
+${config.prefixes}
+select * where {
+  <${subject}> ?p ?o  .
+}
+limit 100
+`;
 
 	try {
 		const response = await fetch(config.endpoint, {

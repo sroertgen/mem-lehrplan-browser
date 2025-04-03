@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
 import { writable, get, derived } from 'svelte/store';
 import { config } from '$lib/config';
-import { queryFTS, queryAllLP } from '$lib/queryBuilder';
 
 /**
  * @typedef {import('svelte/store').Readable} Readable
@@ -116,14 +115,15 @@ export function toggleFilter(key, val) {
 }
 
 export async function handleQuery() {
+	if (!browser) return;
 	try {
 		const offset = get(currentPage) * get(db).resultsPerPage;
 		const searchVal = get(searchTerm);
 		let res;
 		if (searchVal || get(filterIsSelected)) {
-			res = await queryFTS(searchVal, offset);
+			res = await fetch(`/api/query?search=${searchVal}&offset=${offset}`);
 		} else {
-			res = await queryAllLP(offset);
+			res = await fetch('/api/curricula');
 		}
 		const results = await res.json();
 

@@ -19,8 +19,15 @@ export const uriMappings = {
 	'https://w3id.org/lehrplan/ontology/LP_0001015': 'CE-Fragment'
 };
 
+const prefixes = `
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX lp: <https://w3id.org/lehrplan/ontology/>
+PREFIX onto: <http://www.ontotext.com/>
+`;
+
 export const config = {
 	filterKeys: ['subjects', 'classLevels', 'states', 'subjectsByState'],
 	// endpoint: 'https://graphdb.edufeed.org/repositories/bayern-new'
-	endpoint: 'http://localhost:7200/repositories/bayern-new'
+	endpoint: 'http://localhost:7200/repositories/bayern-new',
+	prefixes
 };
