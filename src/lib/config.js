@@ -20,7 +20,7 @@ export const uriMappings = {
 };
 
 export const config = {
-	filterKeys: ['fach', 'jahrgangsstufe', 'bundesland'],
+	filterKeys: ['subjects', 'classLevels', 'states', 'subjectsByState'],
 	// endpoint: 'https://graphdb.edufeed.org/repositories/bayern-new'
 	endpoint: 'http://localhost:7200/repositories/bayern-new'
 };

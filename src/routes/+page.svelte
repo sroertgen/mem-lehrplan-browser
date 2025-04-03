@@ -13,7 +13,7 @@
 
 <div class="flex w-full flex-row">
 	{#if $sideBarOpen}
-		<div class="w-1/5">
+		<div class="w-1/4">
 			<FilterSidebar />
 		</div>
 	{/if}

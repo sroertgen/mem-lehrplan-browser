@@ -1,15 +1,15 @@
 <script>
-	import { toggleFilter, selectedFilters, currentPage, handleQuery } from '$lib/db';
-	import { capitalize } from '$lib/utils';
+	import { uri2label } from '$lib/db';
+	import FilterOptions from './FilterOptions.svelte';
 	import Map from '$lib/icons/Map.svelte';
 	import ChevronDown from '$lib/icons/ChevronDown.svelte';
 	import ChevronUp from '$lib/icons/ChevronUp.svelte';
 	import Funnel from '$lib/icons/Funnel.svelte';
 
-	export let filter;
+	export let filterKey;
+	export let label;
+	export let options;
 
-	const isSelected = (key, val) => $selectedFilters[key].find((e) => e.uri.value === val.uri.value);
-	const filterKey = filter[0];
 	let expanded = true;
 </script>
 
@@ -18,15 +18,21 @@
 		onclick={() => (expanded = !expanded)}
 		class="my-2 flex cursor-pointer flex-row items-center justify-between overflow-y-auto"
 	>
+		<!-- FilterIcon -->
 		<div class="my-2 flex flex-row items-center gap-2">
-			{#if filterKey === 'bundesland'}
+			{#if filterKey === 'states'}
 				<Map />
 			{:else if filterKey === 'subject'}
 				<Funnel />
+			{:else if label === 'Bayern'}
+				<img
+					src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Flag_map_of_Bavaria.svg/235px-Flag_map_of_Bavaria.svg.png"
+					class="h-5 w-5 object-contain"
+				/>
 			{:else}
 				<Funnel />
 			{/if}
-			<p>{capitalize(filterKey)}</p>
+			<p>{label}</p>
 		</div>
 		{#if expanded}
 			<ChevronUp />
@@ -37,20 +43,13 @@
 
 	<!-- Filter Options -->
 	{#if expanded}
-		<div class="ml-1 flex flex-col gap-2">
-			{#each filter[1] as opt}
-				{@const selected = isSelected(filterKey, opt)}
-
-				<label class="flex flex-row items-center gap-2">
-					<input
-						class="checkbox"
-						onclick={() => toggleFilter(filterKey, opt)}
-						type="checkbox"
-						checked={selected}
-					/>
-					{opt.label.value.replace('(Schulfach)', '')}
-				</label>
+		{#if !Array.isArray(options)}
+			{#each Object.keys(options) as key}
+				<svelte:self options={options[key]} {filterKey} label={$uri2label[key]} />
 			{/each}
-		</div>
+		{:else}
+			<FilterOptions {options} {filterKey} />
+		{/if}
+		<div class="ml-1 flex flex-col gap-2"></div>
 	{/if}
 </div>

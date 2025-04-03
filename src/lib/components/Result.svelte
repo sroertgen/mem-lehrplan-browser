@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { uriMappings } from '$lib/config';
 	import { uri2label, toggleFilter } from '$lib/db';
 
@@ -26,10 +25,10 @@
 	}
 
 	/**
-	 * @returns {Promise<ResultItem[]>}
+	 * @returns {Promise<ResultItem>}
 	 */
-	async function getResultInfo() {
-		const res = await fetch(`/api/resultInfo?subject=${result.s.value}&lp=${result.lp.value}`);
+	async function getElementInfo() {
+		const res = await fetch(`/api/elementInfo?element=${result.s.value}&lp=${result.lp.value}`);
 		const resultInfo = await res.json();
 		return resultInfo;
 	}
@@ -37,32 +36,45 @@
 	$: highlightedText = (text) => highlightText(text, search);
 </script>
 
-<div class="card card-border bg-base w-full md:w-3/4">
+<div class="card card-border w-full bg-[#FEF3E9] md:w-3/4">
 	<div class="card-body">
-		{#await getResultInfo() then resultInfo}
+		{#await getElementInfo() then element}
+			<!-- Bundesland und Fach -->
+			<div class="flex justify-between">
+				{#each element.state as state}
+					<div
+						onclick={() => toggleFilter('states', state)}
+						class="self-center rounded-lg bg-[#FBD022] p-1 text-sm"
+					>
+						{$uri2label[state.uri.value]}
+					</div>
+				{/each}
+				{#each element.subject as subject}
+					<div
+						onclick={() => toggleFilter('subjects', subject)}
+						class="self-center rounded-lg bg-[#FBD022] p-1"
+					>
+						{$uri2label[subject.uri.value]}
+					</div>
+				{/each}
+			</div>
+
 			<div class="flex flex-col md:flex-row md:items-center md:justify-between">
 				<h2 class="card-title truncate">
-					{resultInfo?.type?.map((e) => uriMappings[e.value] || null).filter((e) => e != null)}
+					{element?.type?.map((e) => uriMappings[e.value] || null).filter((e) => e != null)}
 				</h2>
 				<div class="flex flex-col gap-2 md:flex md:flex-row">
-					{#each resultInfo.subject as subject}
-						<div
-							onclick={() => toggleFilter('fach', subject)}
-							class="self-center rounded-lg bg-[#FBD022] p-1"
-						>
-							{$uri2label[subject.uri.value]}
-						</div>
-					{/each}
-					{#each resultInfo.classLevel as level}
-						<div class="rounded-lg bg-[#FBD022] p-1">
-							{$uri2label[level.uri.value].split(' ')[1] ||
-								level.value.split('/')[level.value.split('/').length - 1]}
+					{#each element.classLevel as level}
+						<div class="h-6 w-6 rounded-full bg-[#FBD022] text-center">
+							{$uri2label[level.uri.value]?.split(' ')[1] ||
+								level.value?.split('/')[level.value.split('/').length - 1] ||
+								''}
 						</div>
 					{/each}
 				</div>
 			</div>
 			<a href={`/b/${encodeURIComponent(result.s.value)}`}>{result.s.value}</a>
-			<p>{@html highlightedText(resultInfo.label?.[0].value)}</p>
+			<p>{@html highlightedText(element.label?.[0].value)}</p>
 			<div class="card-actions justify-end">
 				<a href={`/b/${encodeURIComponent(result.s.value)}`} class="btn btn-primary">Details</a>
 			</div>

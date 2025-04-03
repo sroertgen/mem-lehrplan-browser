@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { get } from 'svelte/store';
 import { config } from '$lib/config';
 import { selectedFilters } from '$lib/db';
 
@@ -11,7 +11,7 @@ PREFIX onto: <http://www.ontotext.com/>
 `;
 
 const bundeslandFilter = () => {
-	const filter = get(selectedFilters)['bundesland'];
+	const filter = get(selectedFilters)['states'];
 	const filterLen = filter.length;
 	if (filterLen === 0) {
 		return '?lp lp:LP_0000029 ?bundesland .';
@@ -28,7 +28,8 @@ const bundeslandFilter = () => {
 };
 
 const subjectsFilter = () => {
-	const filter = get(selectedFilters)['fach'];
+	console.log(get(selectedFilters));
+	const filter = get(selectedFilters)['subjects'];
 	const filterLen = filter.length;
 	if (filterLen === 0) {
 		return '?lp lp:LP_0000537 ?fach .';
@@ -46,7 +47,7 @@ const subjectsFilter = () => {
 
 const jahrgangsstufeFilter = () =>
 	/** @type {FilterItem[]} */
-	get(selectedFilters)['jahrgangsstufe'].length
+	get(selectedFilters)['classLevels'].length
 		? get(selectedFilters)
 				['jahrgangsstufe'].map(
 					/** @param {FilterItem} f */
@@ -110,6 +111,21 @@ WHERE {
 
 }
 OFFSET ${offset}
+	`;
+	console.log(sparqlQuery);
+	const result = await executeQuery(sparqlQuery);
+	return result;
+}
+
+export async function getSubjectsByState(state) {
+	const sparqlQuery = `
+${PREFIXES}
+SELECT DISTINCT ?uri ?label
+WHERE {
+    ?s lp:LP_0000537 ?uri .
+    ?s lp:LP_0000029 <${state}> .
+    ?uri rdfs:label ?label .
+}
 	`;
 	console.log(sparqlQuery);
 	const result = await executeQuery(sparqlQuery);

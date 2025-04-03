@@ -1,15 +1,6 @@
 <script>
-	import {
-		db,
-		filters,
-		handleQuery,
-		searchTerm,
-		selectedFilters,
-		resetFilters,
-		toggleFilter,
-		uri2label
-	} from '$lib/db';
-	import Filter from '$lib/components/Filter.svelte';
+	import { handleQuery, searchTerm, selectedFilters, toggleFilter, uri2label } from '$lib/db';
+	import X from '$lib/icons/X.svelte';
 
 	/** @typedef {import('$lib/types.js').FilterItem} FilterItem */
 </script>
@@ -20,10 +11,10 @@
 		<div class="flex flex-row flex-wrap gap-1">
 			{#each Object.entries($selectedFilters) as [key, val]}
 				{#each val as v}
-					{console.log(v)}
 					<span
-						class=" cursor-pointer rounded-lg bg-[#FBD022] p-2"
-						onclick={() => toggleFilter(key, v)}>{v?.label?.value || $uri2label[v.uri.value]}</span
+						class="text-s flex cursor-pointer items-center gap-1 rounded-lg bg-[#FBD022] p-1"
+						onclick={() => toggleFilter(key, v)}
+						>{v?.label?.value || $uri2label[v.uri.value]} <X /></span
 					>
 				{/each}
 			{/each}

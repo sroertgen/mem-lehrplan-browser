@@ -47,8 +47,13 @@ export function mergeQueryResult(bindings) {
 			return true;
 		});
 	}
+	// TODO generalize or rework this
 	const urimappings = get(uri2label);
 	uniqueValues.subject = uniqueValues.subject.map((e) => ({
+		label: { type: 'literal', value: urimappings[e.value] },
+		uri: { type: e.type, value: e.value }
+	}));
+	uniqueValues.state = uniqueValues.state.map((e) => ({
 		label: { type: 'literal', value: urimappings[e.value] },
 		uri: { type: e.type, value: e.value }
 	}));
@@ -57,6 +62,5 @@ export function mergeQueryResult(bindings) {
 		uri: { type: e.type, value: e.value }
 	}));
 
-	console.log(uniqueValues);
 	return uniqueValues;
 }

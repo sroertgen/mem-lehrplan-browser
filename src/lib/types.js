@@ -39,6 +39,4 @@
  * @property {ClassLevel[]} classLevel - The class level for the item
  */
 
-// Jahrgangsstufe[array];
-
 export {};

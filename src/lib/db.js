@@ -11,8 +11,7 @@ import { queryFTS, queryAllLP } from '$lib/queryBuilder';
 
 export const searchTerm = writable('');
 export const currentPage = writable(0);
-export const filters = writable([]);
-initFilters();
+export const filters = writable(initFilters());
 export const selectedFilters = writable(initSelectedFilters());
 export const uri2label = writable({});
 /** @type {ReadableBoolean} */
@@ -32,44 +31,58 @@ export function getDB() {
 	return get(db);
 }
 
-async function getFilter(filterQuery, filterLabel) {
-	const faecherRaw = await fetch(`/api/getFilters?filter=${filterQuery}`);
-
-	/**
-	 * List of subjects/categories fetched from the API
-	 * @type {FilterItem[]}
-	 */
-	const filterItems = await faecherRaw.json();
-	const sortedFilterItems = filterItems.sort((a, b) =>
+function sortItems(items) {
+	const sortedFilterItems = items.sort((a, b) =>
 		a.label.value.localeCompare(b.label.value, 'de', { sensitivity: 'base' })
 	);
-	const filter = [filterLabel, sortedFilterItems];
-	return filter;
+	return sortedFilterItems;
 }
 
 async function initFilters() {
 	if (!browser) return;
-	const filtersToGet = ['fach', 'jahrgangsstufe', 'bundesland'];
+	const subjectsRes = await fetch('/api/subjects');
+	const subjects = await subjectsRes.json();
 
-	const filterPromises = filtersToGet.map(async (filterType) => {
-		return await getFilter(filterType, filterType);
+	const classLevelsRes = await fetch('/api/classLevels');
+	const classLevels = await classLevelsRes.json();
+	const classLevelsSorted = sortItems(classLevels);
+
+	const statesRes = await fetch('/api/states');
+	const states = await statesRes.json();
+
+	const subjectByStatePromises = states.map(async (e) => {
+		const response = await fetch(`/api/subjects?state=${e.uri.value}`);
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		return { [e.uri.value]: await response.json() }; // state uri: Subjects as FilterItems
 	});
+	const subjectsByStateArray = await Promise.all(subjectByStatePromises);
+	const subjectsByState = subjectsByStateArray.reduce((accumulator, currentObj) => {
+		return { ...accumulator, ...currentObj };
+	}, {});
 
-	const [faecher, jahrgangsstufe, bundesland] = await Promise.all(filterPromises);
+	const labels = Object.assign(
+		{},
+		...[
+			subjects.map((e) => ({ [e.uri.value]: e.label.value })),
+			classLevels.map((e) => ({ [e.uri.value]: e.label.value })),
+			states.map((e) => ({ [e.uri.value]: e.label.value }))
+		].flat()
+	);
 
+	// store the labels
 	uri2label.update((uri2label) => {
-		return Object.assign(
-			{},
-			...[
-				...faecher[1].map((e) => ({ [e.uri.value]: e.label.value })),
-				...jahrgangsstufe[1].map((e) => ({ [e.uri.value]: e.label.value })),
-				...bundesland[1].map((e) => ({ [e.uri.value]: e.label.value }))
-			].flat()
-		);
+		return labels;
 	});
 
 	filters.update((filters) => {
-		return [bundesland, faecher, jahrgangsstufe];
+		return {
+			states,
+			subjects,
+			classLevels: classLevelsSorted,
+			subjectsByState
+		};
 	});
 }
 
@@ -105,7 +118,6 @@ export function toggleFilter(key, val) {
 export async function handleQuery() {
 	try {
 		const offset = get(currentPage) * get(db).resultsPerPage;
-		console.log(offset);
 		const searchVal = get(searchTerm);
 		let res;
 		if (searchVal || get(filterIsSelected)) {

@@ -2,9 +2,9 @@ import { config } from '$lib/config';
 import { mergeQueryResult } from '$lib/utils';
 
 export async function GET({ fetch, url }) {
-	const subject = url.searchParams.get('subject');
+	const element = url.searchParams.get('element');
 	const lp = url.searchParams.get('lp');
-	if (!subject) {
+	if (!element) {
 		return new Response(JSON.stringify({ error: 'No query provided' }), { status: 400 });
 	}
 
@@ -13,12 +13,14 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX lp: <https://w3id.org/lehrplan/ontology/>
 PREFIX onto: <http://www.ontotext.com/>
 
-select ?label ?subject ?classLevel ?type
+select ?label ?subject ?classLevel ?type ?state
 where {
-    <${subject}> a ?type ;
+    <${element}> a ?type ;
       rdfs:label ?label .
     <${lp}> lp:LP_0000537 ?subject ;
-            lp:LP_0000026 ?classLevel .
+            lp:LP_0000026 ?classLevel ;
+            lp:LP_0000029 ?state ;
+.
 
 # only types from lp namespace
 FILTER(STRSTARTS(STR(?type), STR(lp:)))

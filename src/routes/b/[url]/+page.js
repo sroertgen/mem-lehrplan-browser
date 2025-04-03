@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, fetch }) {
 	try {
-		const res = await fetch(`/api/subjectInfo?subject=${encodeURIComponent(params.url)}`);
+		const res = await fetch(`/api/allTriples?subject=${encodeURIComponent(params.url)}`);
 		const subjectInfo = await res.json();
 
 		if (subjectInfo) {
