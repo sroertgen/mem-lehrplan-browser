@@ -1,7 +1,7 @@
 <script>
 	import { uriMappings } from '$lib/config.js';
 	import { isValidURI } from '$lib/utils';
-	import Home from '$lib/icons/Home.svelte';
+	import { lookupLabel } from '$lib/db';
 
 	/** @type {import('./$types').PageProps} */
 	let { data } = $props();

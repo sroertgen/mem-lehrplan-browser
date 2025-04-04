@@ -17,7 +17,7 @@ export async function GET({ url }) {
 	const search = url.searchParams.get('search');
 	const states = url.searchParams.getAll('state');
 	const levels = url.searchParams.getAll('level');
-	const subjects = url.searchParams.getAll('subjects');
+	const subjects = url.searchParams.getAll('subject');
 	const limit = url.searchParams.get('limit');
 	const offset = url.searchParams.get('offset');
 	const sparqlQuery = `

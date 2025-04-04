@@ -117,11 +117,29 @@ export function toggleFilter(key, val) {
 export async function handleQuery() {
 	if (!browser) return;
 	try {
+		const selectedFiltersStore = get(selectedFilters);
 		const offset = get(currentPage) * get(db).resultsPerPage;
 		const searchVal = get(searchTerm);
+		const selectedStates = selectedFiltersStore['states'];
+		const selectedSubjects = selectedFiltersStore['subjects'];
+		const selectedLevels = selectedFiltersStore['classLevels'];
 		let res;
 		if (searchVal || get(filterIsSelected)) {
-			res = await fetch(`/api/query?search=${searchVal}&offset=${offset}`);
+			const params = new URLSearchParams();
+			if (searchVal) {
+				params.append('search', searchVal);
+			}
+			if (selectedStates) {
+				selectedStates.forEach((e) => params.append('state', e.uri.value));
+			}
+			if (selectedSubjects) {
+				selectedSubjects.forEach((e) => params.append('subject', e.uri.value));
+			}
+			if (selectedLevels) {
+				selectedLevels.forEach((e) => params.append('level', e.uri.value));
+			}
+			const url = `/api/query?${params.toString()}`;
+			res = await fetch(url);
 		} else {
 			res = await fetch('/api/curricula');
 		}
@@ -150,3 +168,11 @@ export const resetFilters = () => {
 	db.update((db) => ({ ...db, results: [] }));
 	handleQuery();
 };
+
+export async function lookupLabel(uri) {
+	const res = await fetch(`/api/label?label=${uri}`);
+	const labelRes = await res.json();
+	const label = labelRes.label.value;
+	console.log('looked up label', label);
+	return;
+}
