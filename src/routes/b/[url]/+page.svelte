@@ -1,5 +1,4 @@
 <script>
-	import { uriMappings } from '$lib/config.js';
 	import { isValidURI } from '$lib/utils';
 	import { lookupLabel } from '$lib/db';
 
@@ -19,12 +18,18 @@
 			{#each data.subjectInfo as s}
 				{@const value = s.o.value}
 				<tr>
-					<td class="w-1/4 text-center">{uriMappings[s.p.value] ?? s.p.value}</td>
+					<td class="w-1/4 text-center">
+						{#await lookupLabel(s.p.value) then name}
+							{name}
+						{/await}
+					</td>
 					<td>
 						{#if isValidURI(value)}
-							<a class="underline decoration-sky-500" href={`/b/${encodeURIComponent(value)}`}
-								>{uriMappings[value] ?? value}</a
-							>
+							<a class="underline decoration-sky-500" href={`/b/${encodeURIComponent(value)}`}>
+								{#await lookupLabel(value) then name}
+									{name}
+								{/await}
+							</a>
 						{:else}
 							<p>{@html value}</p>
 						{/if}

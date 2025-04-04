@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { writable, get, derived } from 'svelte/store';
-import { config } from '$lib/config';
+import { config, uriMappings } from '$lib/config';
 
 /**
  * @typedef {import('svelte/store').Readable} Readable
@@ -72,8 +72,10 @@ async function initFilters() {
 
 	// store the labels
 	uri2label.update((uri2label) => {
-		return labels;
+		return { ...labels, ...uriMappings };
 	});
+
+	console.log(get(uri2label));
 
 	filters.update((filters) => {
 		return {
@@ -169,10 +171,33 @@ export const resetFilters = () => {
 	handleQuery();
 };
 
+/**
+ * Looks a label up in the uri2label store
+ * if not found it searches for it and adds it to the store
+ * @param {string} uri - The uri to look up
+ * @returns {Promise<string>}
+ */
 export async function lookupLabel(uri) {
-	const res = await fetch(`/api/label?label=${uri}`);
-	const labelRes = await res.json();
-	const label = labelRes.label.value;
-	console.log('looked up label', label);
-	return;
+	const labelStore = get(uri2label);
+	const label = labelStore[uri] ?? null;
+	if (label) {
+		return label;
+	} else {
+		const res = await fetch(`/api/label?uri=${uri}`);
+		const labelRes = await res.json();
+		const label = labelRes.label?.[0].value ?? uri;
+		// initialize uri2label if empty
+		if (Object.keys(labelStore).length === 0) {
+			// TODO make dedicated uri2label initializer
+			await initFilters();
+			return lookupLabel(uri);
+		}
+		uri2label.update((uri2label) => {
+			return {
+				...uri2label,
+				[uri]: label
+			};
+		});
+		return label;
+	}
 }
