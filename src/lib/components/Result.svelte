@@ -1,6 +1,7 @@
 <script>
 	import { uriMappings } from '$lib/config';
-	import { uri2label, toggleFilter } from '$lib/db';
+	import { uri2label, toggleFilter, toggleElement, selectedElements } from '$lib/db';
+	import { getElementInfo } from '$lib/utils';
 
 	/** @typedef {import('./types.js').ResultItem} ResultItem */
 
@@ -24,21 +25,12 @@
 		}
 	}
 
-	/**
-	 * @returns {Promise<ResultItem>}
-	 */
-	async function getElementInfo() {
-		const res = await fetch(`/api/elementInfo?element=${result.s.value}&lp=${result.lp.value}`);
-		const resultInfo = await res.json();
-		return resultInfo;
-	}
-
 	$: highlightedText = (text) => highlightText(text, search);
 </script>
 
 <div class="card card-border w-full bg-[#FEF3E9] md:w-3/4">
 	<div class="card-body">
-		{#await getElementInfo() then element}
+		{#await getElementInfo(result.s.value) then element}
 			<!-- Bundesland und Fach -->
 			<div class="flex justify-between">
 				{#each element.state as state}
@@ -78,8 +70,20 @@
 					{/each}
 				</div>
 			</div>
+			<!-- Label -->
 			<p>{@html highlightedText(element.label?.[0].value)}</p>
+			<p>Aus Lehrplan: {element.lp[0].value}</p>
 			<div class="card-actions justify-end">
+				<!-- Select Element -->
+				<label class="flex flex-row items-center gap-2">
+					<input
+						class="checkbox"
+						onclick={() => toggleElement(result.s.value)}
+						type="checkbox"
+						checked={$selectedElements.find((e) => e === result.s.value)}
+					/>
+					Für Suche auswählen
+				</label>
 				<a href={`/b/${encodeURIComponent(result.s.value)}`} class="btn btn-primary">Details</a>
 			</div>
 		{/await}

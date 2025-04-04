@@ -1,5 +1,5 @@
 <script>
-	import { sideBarOpen } from '$lib/db';
+	import { sideBarFilterOpen, sideBarElementOpen } from '$lib/db';
 	import Menu from '$lib/icons/Menu.svelte';
 	import X from '$lib/icons/X.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -10,9 +10,9 @@
 		<button
 			id="sidebarButton"
 			class="btn btn-square btn-ghost drawer-button"
-			onclick={() => ($sideBarOpen = !$sideBarOpen)}
+			onclick={() => ($sideBarFilterOpen = !$sideBarFilterOpen)}
 		>
-			{#if $sideBarOpen}
+			{#if $sideBarFilterOpen}
 				<X />
 			{:else}
 				<Menu />
@@ -25,4 +25,15 @@
 	<div class="absolute left-1/2 w-full max-w-md -translate-x-1/2 transform">
 		<SearchBar />
 	</div>
+	<button
+		id="sidebarButton"
+		class="btn btn-square btn-ghost drawer-button"
+		onclick={() => ($sideBarElementOpen = !$sideBarElementOpen)}
+	>
+		{#if $sideBarElementOpen}
+			<X />
+		{:else}
+			<Menu />
+		{/if}
+	</button>
 </div>

@@ -3,20 +3,24 @@ import { mergeQueryResult } from '$lib/utils';
 
 export async function GET({ fetch, url }) {
 	const element = url.searchParams.get('element');
-	const lp = url.searchParams.get('lp');
 	if (!element) {
 		return new Response(JSON.stringify({ error: 'No query provided' }), { status: 400 });
 	}
 
+	// TODO lp entfernen und über query bekommen.
 	const sparqlQuery = `
 ${config.prefixes}
-select ?label ?subject ?classLevel ?type ?state
+select ?label ?subject ?classLevel ?type ?state ?lp
 where {
     <${element}> a ?type ;
-      rdfs:label ?label .
-    OPTIONAL { <${lp}> lp:LP_0000537 ?subject . }
-    OPTIONAL { <${lp}> lp:LP_0000026 ?classLevel . }
-    OPTIONAL { <${lp}> lp:LP_0000029 ?state . }
+      rdfs:label ?label ;
+      lp:partOf* ?lp .
+  # only the root element -> Lehrplan
+  FILTER NOT EXISTS { ?lp lp:partOf ?anything }
+
+    OPTIONAL { ?lp lp:LP_0000537 ?subject . }
+    OPTIONAL { ?lp lp:LP_0000026 ?classLevel . }
+    OPTIONAL { ?lp lp:LP_0000029 ?state . }
 .
 
 # only types from lp namespace
@@ -24,7 +28,6 @@ FILTER(STRSTARTS(STR(?type), STR(lp:)))
 }
   `;
 	try {
-		console.log(sparqlQuery);
 		const response = await fetch(config.endpoint, {
 			method: 'POST',
 			headers: {

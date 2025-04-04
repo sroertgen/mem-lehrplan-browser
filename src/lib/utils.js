@@ -64,3 +64,14 @@ export function mergeQueryResult(bindings) {
 
 	return uniqueValues;
 }
+
+/**
+ * Gets basic info for a given element.
+ * @param {string} elementURI - URI of the element.
+ * @returns {Promise<ResultItem>}
+ */
+export async function getElementInfo(elementURI) {
+	const res = await fetch(`/api/elementInfo?element=${elementURI}`);
+	const resultInfo = await res.json();
+	return resultInfo;
+}

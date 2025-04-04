@@ -19,7 +19,9 @@ const filterIsSelected = derived(selectedFilters, ($selectedFilters) => {
 	return someSelected;
 });
 export const totalResults = writable(0);
-export const sideBarOpen = writable(false);
+export const sideBarFilterOpen = writable(false);
+export const sideBarElementOpen = writable(false);
+export const selectedElements = writable([]);
 
 export const db = writable({
 	results: [],
@@ -91,6 +93,16 @@ function initSelectedFilters() {
 	return Object.fromEntries(config.filterKeys.map((e) => [e, []]));
 }
 
+export function toggleElement(uri) {
+	selectedElements.update((se) => {
+		if (se.find((e) => e === uri)) {
+			return se.filter((e) => e !== uri);
+		} else {
+			return [...se, uri];
+		}
+	});
+}
+
 /**
  * @param {string} key
  * @param {FilterItem} val
@@ -116,6 +128,41 @@ export function toggleFilter(key, val) {
 	handleQuery();
 }
 
+// Helper function to build params
+function buildParams(
+	offset,
+	searchVal,
+	selectedStates,
+	selectedSubjects,
+	selectedLevels,
+	element = null
+) {
+	const params = new URLSearchParams();
+
+	if (offset) {
+		params.append('offset', offset);
+	}
+	if (searchVal) {
+		params.append('search', searchVal);
+	}
+	if (selectedStates) {
+		selectedStates.forEach((e) => params.append('state', e.uri.value));
+	}
+	if (selectedSubjects) {
+		selectedSubjects.forEach((e) => params.append('subject', e.uri.value));
+	}
+	if (selectedLevels) {
+		selectedLevels.forEach((e) => params.append('level', e.uri.value));
+	}
+
+	if (element) {
+		params.append('element', element);
+		params.append('recursive', 'true');
+	}
+
+	return params;
+}
+
 export async function handleQuery() {
 	if (!browser) return;
 	try {
@@ -125,27 +172,46 @@ export async function handleQuery() {
 		const selectedStates = selectedFiltersStore['states'];
 		const selectedSubjects = selectedFiltersStore['subjects'];
 		const selectedLevels = selectedFiltersStore['classLevels'];
-		let res;
+		const selectedElementsStore = get(selectedElements);
+
+		let results = [];
+
 		if (searchVal || get(filterIsSelected)) {
-			const params = new URLSearchParams();
-			if (searchVal) {
-				params.append('search', searchVal);
+			let fetchPromises = [];
+
+			if (selectedElementsStore.length > 0) {
+				fetchPromises = selectedElementsStore.map((element) => {
+					const params = buildParams(
+						offset,
+						searchVal,
+						selectedStates,
+						selectedSubjects,
+						selectedLevels,
+						element
+					);
+					const url = `/api/query?${params.toString()}`;
+					return fetch(url).then((res) => res.json());
+				});
+			} else {
+				// No elements selected
+				const params = buildParams(
+					offset,
+					searchVal,
+					selectedStates,
+					selectedSubjects,
+					selectedLevels
+				);
+				const url = `/api/query?${params.toString()}`;
+				fetchPromises.push(fetch(url).then((res) => res.json()));
 			}
-			if (selectedStates) {
-				selectedStates.forEach((e) => params.append('state', e.uri.value));
-			}
-			if (selectedSubjects) {
-				selectedSubjects.forEach((e) => params.append('subject', e.uri.value));
-			}
-			if (selectedLevels) {
-				selectedLevels.forEach((e) => params.append('level', e.uri.value));
-			}
-			const url = `/api/query?${params.toString()}`;
-			res = await fetch(url);
+
+			const resultsArrays = await Promise.all(fetchPromises);
+			results = resultsArrays.flat();
 		} else {
-			res = await fetch('/api/curricula');
+			// Default query with no filters
+			const res = await fetch('/api/curricula');
+			results = await res.json();
 		}
-		const results = await res.json();
 
 		if (get(currentPage) === 0) {
 			totalResults.set(results.length);
