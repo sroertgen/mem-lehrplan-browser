@@ -14,9 +14,9 @@ select ?label ?subject ?classLevel ?type ?state
 where {
     <${element}> a ?type ;
       rdfs:label ?label .
-    <${lp}> lp:LP_0000537 ?subject ;
-            lp:LP_0000026 ?classLevel ;
-            lp:LP_0000029 ?state ;
+    OPTIONAL { <${lp}> lp:LP_0000537 ?subject . }
+    OPTIONAL { <${lp}> lp:LP_0000026 ?classLevel . }
+    OPTIONAL { <${lp}> lp:LP_0000029 ?state . }
 .
 
 # only types from lp namespace

@@ -16,7 +16,8 @@ export const uriMappings = {
 	'http://purl.obolibrary.org/obo/BFO_0000031': 'BFO: Generically Dependent Continuant',
 	'https://w3id.org/lehrplan/ontology/LP_0000261': 'Curriculares Element',
 	'http://purl.obolibrary.org/obo/BFO_0000001': 'BFO: Entity',
-	'https://w3id.org/lehrplan/ontology/LP_0001015': 'CE-Fragment'
+	'https://w3id.org/lehrplan/ontology/LP_0001015': 'CE-Fragment',
+	'https://w3id.org/lehrplan/ontology/LP_0000819': 'Lehrplan Plus (BY)'
 };
 
 const prefixes = `

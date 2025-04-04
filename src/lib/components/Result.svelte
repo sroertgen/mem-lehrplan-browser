@@ -60,9 +60,14 @@
 			</div>
 
 			<div class="flex flex-col md:flex-row md:items-center md:justify-between">
-				<h2 class="card-title truncate">
+				<!-- Type -->
+				<a
+					href={`/b/${encodeURIComponent(result.s.value)}`}
+					class="card-title truncate hover:underline"
+				>
 					{element?.type?.map((e) => uriMappings[e.value] || null).filter((e) => e != null)}
-				</h2>
+				</a>
+				<!-- Klassenstufe -->
 				<div class="flex flex-col gap-2 md:flex md:flex-row">
 					{#each element.classLevel as level}
 						<div class="h-6 w-6 rounded-full bg-[#FBD022] text-center">
@@ -73,7 +78,6 @@
 					{/each}
 				</div>
 			</div>
-			<a href={`/b/${encodeURIComponent(result.s.value)}`}>{result.s.value}</a>
 			<p>{@html highlightedText(element.label?.[0].value)}</p>
 			<div class="card-actions justify-end">
 				<a href={`/b/${encodeURIComponent(result.s.value)}`} class="btn btn-primary">Details</a>
