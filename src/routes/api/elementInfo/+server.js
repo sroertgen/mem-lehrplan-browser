@@ -10,7 +10,7 @@ export async function GET({ fetch, url }) {
 	// TODO lp entfernen und über query bekommen.
 	const sparqlQuery = `
 ${config.prefixes}
-select ?label ?subject ?classLevel ?type ?state ?lp
+select ?label ?subject ?classLevel ?type ?state ?lp ?schoolType
 where {
     <${element}> a ?type ;
       rdfs:label ?label ;
@@ -21,6 +21,7 @@ where {
     OPTIONAL { ?lp lp:LP_0000537 ?subject . }
     OPTIONAL { ?lp lp:LP_0000026 ?classLevel . }
     OPTIONAL { ?lp lp:LP_0000029 ?state . }
+    OPTIONAL { ?lp lp:LP_0000812 ?schoolType }
 .
 
 # only types from lp namespace

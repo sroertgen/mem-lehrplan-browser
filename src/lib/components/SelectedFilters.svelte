@@ -12,7 +12,7 @@
 			{#each Object.entries($selectedFilters) as [key, val]}
 				{#each val as v}
 					<span
-						class="text-s flex cursor-pointer items-center gap-1 rounded-lg bg-[#FBD022] p-1"
+						class="flex cursor-pointer items-center gap-1 rounded-lg bg-[#FBD022] p-1 text-xs"
 						onclick={() => toggleFilter(key, v)}
 						>{v?.label?.value || $uri2label[v.uri.value]} <X /></span
 					>

@@ -5,6 +5,8 @@
 
 <div id="sidebarElement" class="bg-base-100 max-h-screen overflow-y-auto">
 	{#key $filters}
+		<Filter options={$filters['types']} filterKey="types" label="Typen" />
+		<Filter options={$filters['schoolTypes']} filterKey="schoolTypes" label="Schularten" />
 		<Filter options={$filters['subjectsByState']} filterKey="subjects" label="Fächer" />
 		<Filter options={$filters['states']} filterKey="states" label="Bundesländer" />
 		<Filter options={$filters['classLevels']} filterKey="classLevels" label="Jahrgangsstufen" />

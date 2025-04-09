@@ -1,6 +1,12 @@
 import { config } from '$lib/config';
 import { selectedElements } from '$lib/db';
-import { statesFilter, subjectsFilter, classLevelFilter } from '$lib/queryBuilder';
+import {
+	statesFilter,
+	subjectsFilter,
+	classLevelFilter,
+	typeFilter,
+	schoolTypeFilter
+} from '$lib/queryBuilder';
 
 /**
  * Retrieves URI and label pairs based on optional state filter.
@@ -20,6 +26,8 @@ export async function GET({ url }) {
 	const states = url.searchParams.getAll('state');
 	const levels = url.searchParams.getAll('level');
 	const subjects = url.searchParams.getAll('subject');
+	const types = url.searchParams.getAll('type');
+	const schoolTypes = url.searchParams.getAll('schoolType');
 	const limit = url.searchParams.get('limit');
 	const offset = url.searchParams.get('offset');
 	const recursive = url.searchParams.get('recursive');
@@ -32,6 +40,7 @@ export async function GET({ url }) {
 ${config.prefixes}
 SELECT DISTINCT ?s ?lp
 WHERE {
+  ${typeFilter(types)}
   BIND (<${element}> AS ?element)
   ?element lp:hasPart* ?s .
   ?s lp:partOf* ?element .
@@ -46,13 +55,15 @@ WHERE {
   ${statesFilter(states)}
   ${subjectsFilter(subjects)} 
   ${classLevelFilter(levels)}
+  ${schoolTypeFilter(schoolTypes)}
 }
 `;
 	} else {
 		sparqlQuery = `
 ${config.prefixes}
-SELECT ?s ?lp
+SELECT DISTINCT ?s ?lp
 WHERE {
+  ${typeFilter(types)}
   ?s rdfs:label ?value .
   ${search ? `?value onto:fts "${search}*" .` : ''}
   ?s lp:partOf* ?lp .
@@ -62,6 +73,7 @@ WHERE {
   ${statesFilter(states)}
   ${subjectsFilter(subjects)} 
   ${classLevelFilter(levels)}
+  ${schoolTypeFilter(schoolTypes)}
 }
 
 ${limit ? `LIMIT ${limit}` : ''}

@@ -1,5 +1,5 @@
 <script>
-	import { isValidURI } from '$lib/utils';
+	import { isValidURI, copyToClipboard } from '$lib/utils';
 	import { lookupLabel } from '$lib/db';
 
 	/** @type {import('./$types').PageProps} */
@@ -18,9 +18,12 @@
 			{#each data.subjectInfo as s}
 				{@const value = s.o.value}
 				<tr>
+					<!-- left column -->
 					<td class="w-1/4 text-center">
 						{#await lookupLabel(s.p.value) then name}
-							{name}
+							<div class="tooltip" data-tip={s.p.value}>
+								<span onclick={() => copyToClipboard(s.p.value)} class="">{name}</span>
+							</div>
 						{/await}
 					</td>
 					<td>

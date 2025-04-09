@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { writable, get, derived } from 'svelte/store';
 import { config, uriMappings } from '$lib/config';
+import { getElementInfo } from './utils.js';
 
 /**
  * @typedef {import('svelte/store').Readable} Readable
@@ -22,6 +23,8 @@ export const totalResults = writable(0);
 export const sideBarFilterOpen = writable(false);
 export const sideBarElementOpen = writable(false);
 export const selectedElements = writable([]);
+export const results = writable([]);
+export const resultCounter = writable({});
 
 export const db = writable({
 	results: [],
@@ -62,6 +65,21 @@ async function initFilters() {
 	const subjectsByState = subjectsByStateArray.reduce((accumulator, currentObj) => {
 		return { ...accumulator, ...currentObj };
 	}, {});
+	let subjectsSorted = {};
+	Object.keys(subjectsByState).map((k) => (subjectsSorted[k] = sortItems(subjectsByState[k])));
+
+	const types = {
+		'https://w3id.org/lehrplan/ontology/LP_3000051': [
+			{
+				uri: { type: 'uri', value: 'https://w3id.org/lehrplan/ontology/LP_0000819' },
+				label: { type: 'literal', value: 'Lehrplan Plus (BY)' }
+			}
+		]
+	};
+
+	const schoolTypesRes = await fetch('/api/schoolTypes');
+	const schoolTypes = await schoolTypesRes.json();
+	const schoolTypesSorted = sortItems(schoolTypes);
 
 	const labels = Object.assign(
 		{},
@@ -77,14 +95,14 @@ async function initFilters() {
 		return { ...labels, ...uriMappings };
 	});
 
-	console.log(get(uri2label));
-
 	filters.update((filters) => {
 		return {
+			types,
 			states,
 			subjects,
 			classLevels: classLevelsSorted,
-			subjectsByState
+			subjectsByState: subjectsSorted,
+			schoolTypes: schoolTypesSorted
 		};
 	});
 }
@@ -135,6 +153,8 @@ function buildParams(
 	selectedStates,
 	selectedSubjects,
 	selectedLevels,
+	selectedTypes,
+	selectedSchoolTypes,
 	element = null
 ) {
 	const params = new URLSearchParams();
@@ -154,6 +174,12 @@ function buildParams(
 	if (selectedLevels) {
 		selectedLevels.forEach((e) => params.append('level', e.uri.value));
 	}
+	if (selectedTypes) {
+		selectedTypes.forEach((e) => params.append('type', e.uri.value));
+	}
+	if (selectedSchoolTypes) {
+		selectedSchoolTypes.forEach((e) => params.append('schoolType', e.uri.value));
+	}
 
 	if (element) {
 		params.append('element', element);
@@ -172,9 +198,11 @@ export async function handleQuery() {
 		const selectedStates = selectedFiltersStore['states'];
 		const selectedSubjects = selectedFiltersStore['subjects'];
 		const selectedLevels = selectedFiltersStore['classLevels'];
+		const selectedTypes = selectedFiltersStore['types'];
+		const selectedSchoolTypes = selectedFiltersStore['schoolTypes'];
 		const selectedElementsStore = get(selectedElements);
 
-		let results = [];
+		let resultsNew = [];
 
 		if (searchVal || get(filterIsSelected)) {
 			let fetchPromises = [];
@@ -187,9 +215,12 @@ export async function handleQuery() {
 						selectedStates,
 						selectedSubjects,
 						selectedLevels,
+						selectedTypes,
+						selectedSchoolTypes,
 						element
 					);
 					const url = `/api/query?${params.toString()}`;
+					console.log('url', url);
 					return fetch(url).then((res) => res.json());
 				});
 			} else {
@@ -199,27 +230,27 @@ export async function handleQuery() {
 					searchVal,
 					selectedStates,
 					selectedSubjects,
-					selectedLevels
+					selectedLevels,
+					selectedTypes,
+					selectedSchoolTypes
 				);
 				const url = `/api/query?${params.toString()}`;
 				fetchPromises.push(fetch(url).then((res) => res.json()));
 			}
 
 			const resultsArrays = await Promise.all(fetchPromises);
-			results = resultsArrays.flat();
+			resultsNew = resultsArrays.flat();
 		} else {
 			// Default query with no filters
 			const res = await fetch('/api/curricula');
-			results = await res.json();
+			resultsNew = await res.json();
 		}
 
 		if (get(currentPage) === 0) {
-			totalResults.set(results.length);
+			totalResults.set(resultsNew.length);
 		}
 
-		db.update((db) => {
-			return { ...db, results };
-		});
+		results.set(resultsNew);
 	} catch (error) {
 		console.error('Error fetching results:', error);
 	}
@@ -229,6 +260,10 @@ export async function handleQuery() {
 currentPage.subscribe(() => {
 	handleQuery();
 });
+
+// results.subscribe(async () => {
+// 	get(results).forEach(async (e) => await getElementInfo(e.s.value));
+// });
 
 export const resetFilters = () => {
 	searchTerm.set('');

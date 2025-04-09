@@ -1,6 +1,6 @@
 <script>
 	import { uriMappings } from '$lib/config';
-	import { uri2label, toggleFilter, toggleElement, selectedElements } from '$lib/db';
+	import { uri2label, toggleFilter, toggleElement, selectedElements, lookupLabel } from '$lib/db';
 	import { getElementInfo } from '$lib/utils';
 
 	/** @typedef {import('./types.js').ResultItem} ResultItem */
@@ -28,7 +28,7 @@
 	$: highlightedText = (text) => highlightText(text, search);
 </script>
 
-<div class="card card-border w-full bg-[#FEF3E9] md:w-3/4">
+<div class="card card-border w-full min-w-full bg-[#FEF3E9] md:w-3/4">
 	<div class="card-body">
 		{#await getElementInfo(result.s.value) then element}
 			<!-- Bundesland und Fach -->
@@ -41,14 +41,23 @@
 						{$uri2label[state.uri.value]}
 					</div>
 				{/each}
-				{#each element.subject as subject}
-					<div
-						onclick={() => toggleFilter('subjects', subject)}
-						class="self-center rounded-lg bg-[#FBD022] p-1"
-					>
-						{$uri2label[subject.uri.value]}
-					</div>
-				{/each}
+				<div class="flex gap-1">
+					{#each element.schoolType as schoolType}
+						<span class="self-center rounded-lg bg-[#FBD022] p-1"
+							>{#await lookupLabel(schoolType.value) then name}
+								{name}
+							{/await}
+						</span>
+					{/each}
+					{#each element.subject as subject}
+						<div
+							onclick={() => toggleFilter('subjects', subject)}
+							class="self-center rounded-lg bg-[#FBD022] p-1"
+						>
+							{$uri2label[subject.uri.value]}
+						</div>
+					{/each}
+				</div>
 			</div>
 
 			<div class="flex flex-col md:flex-row md:items-center md:justify-between">

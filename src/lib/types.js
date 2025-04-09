@@ -5,6 +5,24 @@
  */
 
 /**
+ * @typedef {Object} Type
+ * @property {string} type - The type of the value
+ * @property {string} value - The actual URI value
+ */
+
+/**
+ * @typedef {Object} LP
+ * @property {string} type - The type of the URI (e.g., "uri")
+ * @property {string} value - The actual URI value
+ */
+
+/**
+ * @typedef {Object} SchoolType
+ * @property {string} type - The type of the URI (e.g., "uri")
+ * @property {string} value - The actual URI value
+ */
+
+/**
  * @typedef {Object} Label
  * @property {string} lang ["xml:lang"] - The language of the label (e.g., "de")
  * @property {string} type - The type of the label (e.g., "literal")
@@ -37,6 +55,9 @@
  * @property {Label[]} label - The label object for the item
  * @property {Subject[]} subject - The label object for the item
  * @property {ClassLevel[]} classLevel - The class level for the item
+ * @property {Type[]} type - Types of the item
+ * @property {LP[]} lp - Types of the item
+ * @property {SchoolType[]} schoolType - SchoolType
  */
 
 export {};

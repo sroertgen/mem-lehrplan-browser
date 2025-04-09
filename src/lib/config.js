@@ -27,7 +27,7 @@ PREFIX onto: <http://www.ontotext.com/>
 `;
 
 export const config = {
-	filterKeys: ['subjects', 'classLevels', 'states', 'subjectsByState'],
+	filterKeys: ['subjects', 'classLevels', 'states', 'subjectsByState', 'types', 'schoolTypes'],
 	// endpoint: 'https://graphdb.edufeed.org/repositories/bayern-new'
 	endpoint: 'http://localhost:7200/repositories/bayern-new',
 	prefixes

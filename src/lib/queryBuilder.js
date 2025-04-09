@@ -46,3 +46,33 @@ export const classLevelFilter = (levels) =>
 				)
 				.join('\nUNION\n')
 		: '?lp lp:LP_0000026 ?x .';
+
+/**
+ * @param {Array<string>} types - array of type uris
+ * @returns {String}
+ */
+export const typeFilter = (types) => {
+	const filterLen = types.length;
+	if (filterLen === 0) {
+		return '';
+	} else if (filterLen === 1) {
+		return `?s a <${types[0]}> .`;
+	} else {
+		return types.map((f) => `\n{ ?s a <${f}> .}\n`).join('\nUNION\n');
+	}
+};
+
+/**
+ * @param {Array<string>} types - array of type uris
+ * @returns {String}
+ */
+export const schoolTypeFilter = (types) => {
+	const filterLen = types.length;
+	if (filterLen === 0) {
+		return '';
+	} else if (filterLen === 1) {
+		return `?lp lp:LP_0000812 <${types[0]}> .`;
+	} else {
+		return types.map((f) => `\n{ ?lp lp:LP_0000812 <${f}> .}\n`).join('\nUNION\n');
+	}
+};

@@ -1,6 +1,6 @@
 /** @typedef {import('./types.js').ResultItem} ResultItem */
 import { get } from 'svelte/store';
-import { uri2label } from './db.js';
+import { resultCounter, uri2label } from './db.js';
 
 export function isValidURI(value) {
 	try {
@@ -73,5 +73,40 @@ export function mergeQueryResult(bindings) {
 export async function getElementInfo(elementURI) {
 	const res = await fetch(`/api/elementInfo?element=${elementURI}`);
 	const resultInfo = await res.json();
+	countResultInfo(resultInfo);
 	return resultInfo;
+}
+
+function countResultInfo(resultInfo) {
+	resultCounter.update((currentCounter) => {
+		// Create a copy of the current counter to work with
+		const newCounter = { ...currentCounter };
+
+		// Process all items in a single update
+		Object.keys(resultInfo).forEach((k) => {
+			resultInfo[k].forEach((r) => {
+				if (r?.type === 'uri') {
+					// Initialize if not present, otherwise increment
+					newCounter[r.value] = (newCounter[r.value] || 0) + 1;
+				}
+			});
+		});
+
+		return newCounter;
+	});
+}
+
+/**
+ * @param {string} text - text to copy
+ */
+export function copyToClipboard(text) {
+	navigator.clipboard
+		.writeText(text)
+		.then(() => {
+			console.log(`${text} successfully copied to clipboard`);
+			// You can add user feedback here, like updating UI
+		})
+		.catch((err) => {
+			console.error('Failed to copy text: ', err);
+		});
 }

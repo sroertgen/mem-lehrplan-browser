@@ -26,7 +26,6 @@ WHERE {
 }
 
 ${limit ? `LIMIT ${limit}` : ''}
-
 `;
 	try {
 		const response = await fetch(config.endpoint, {

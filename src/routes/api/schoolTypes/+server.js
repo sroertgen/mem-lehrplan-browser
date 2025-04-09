@@ -1,5 +1,4 @@
 import { config } from '$lib/config';
-import { typeFilter } from '$lib/queryBuilder';
 
 /** @typedef {import('$lib/types.js').FilterItem} FilterItem */
 
@@ -8,7 +7,7 @@ import { typeFilter } from '$lib/queryBuilder';
  *
  * @route GET /api/your-endpoint
  * @query {string} [state] - Optional state URI to filter results
- * @return {Response<FilterItem[]>} Array of objects containing uri and label properties
+ * @return {Promise<FilterItem[]>} Array of objects containing uri and label properties
  * @example
  * // Request: GET /api/your-endpoint?state=http://example.org/states/california
  * // Response:
@@ -21,22 +20,20 @@ import { typeFilter } from '$lib/queryBuilder';
  *   }
  * ]
  *
- * @throws {Response<Error>} 500 - If SPARQL query execution fails
+ * @throws {Error} 500 - If SPARQL query execution fails
  *
  * @type {import('./$types').RequestHandler}
  */
 export async function GET({ url }) {
 	const state = url.searchParams.get('state');
-	const types = url.searchParams.getAll('type');
 	const sparqlQuery = `
 ${config.prefixes}
 SELECT DISTINCT ?uri ?label
 WHERE {
-  ${typeFilter(types)}
-  ?s lp:LP_0000026 ?uri .
+  ?s lp:LP_0000812 ?uri .
   ?uri rdfs:label ?label .
   ${state ? `?s lp:LP_0000029 <${state}> .` : ''}
-  # only german labels    
+  # only german labels
   FILTER(lang(?label) = "de")
 }`;
 	try {
