@@ -110,3 +110,63 @@ export function copyToClipboard(text) {
 			console.error('Failed to copy text: ', err);
 		});
 }
+
+/**
+ * Builds a tree structure from flat SPARQL query results
+ * @param {Object} data - The SPARQL query results object
+ * @returns {Object} - A tree structure
+ */
+export function buildTreeFromSparqlResults(data) {
+	const bindings = data;
+
+	const nodesMap = new Map();
+	const partNodes = new Set();
+
+	bindings.forEach((binding) => {
+		const subjectUri = binding.s.value;
+		const partUri = binding.part.value;
+
+		// Add the subject node if it doesn't exist
+		if (!nodesMap.has(subjectUri)) {
+			nodesMap.set(subjectUri, {
+				id: subjectUri,
+				children: []
+			});
+		}
+
+		// Add the part node if it doesn't exist
+		if (!nodesMap.has(partUri)) {
+			nodesMap.set(partUri, {
+				id: partUri,
+				children: []
+			});
+		}
+
+		// Mark this node as a part (child)
+		partNodes.add(partUri);
+	});
+
+	// Second pass: build the hierarchical structure
+	bindings.forEach((binding) => {
+		const subjectUri = binding.s.value;
+		const partUri = binding.part.value;
+
+		const parentNode = nodesMap.get(subjectUri);
+		const childNode = nodesMap.get(partUri);
+
+		parentNode.children.push(childNode);
+	});
+
+	const rootNodes = [];
+	nodesMap.forEach((node, uri) => {
+		if (!partNodes.has(uri)) {
+			rootNodes.push(node);
+		}
+	});
+
+	if (rootNodes.length === 1) {
+		return rootNodes[0];
+	}
+
+	return rootNodes;
+}

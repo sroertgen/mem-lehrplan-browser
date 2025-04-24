@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { writable, get, derived } from 'svelte/store';
 import { config, uriMappings } from '$lib/config';
-import { getElementInfo } from './utils.js';
+import { buildTreeFromSparqlResults, getElementInfo, mergeQueryResult } from './utils.js';
 
 /**
  * @typedef {import('svelte/store').Readable} Readable
@@ -25,6 +25,7 @@ export const sideBarElementOpen = writable(false);
 export const selectedElements = writable([]);
 export const results = writable([]);
 export const resultCounter = writable({});
+export const selectedElementsAsTree = writable([]);
 
 export const db = writable({
 	results: [],
@@ -239,7 +240,10 @@ export async function handleQuery() {
 			}
 
 			const resultsArrays = await Promise.all(fetchPromises);
+			// TODO merge results
 			resultsNew = resultsArrays.flat();
+			console.log(mergeQueryResult(resultsNew));
+			// resultsNew = mergeQueryResult(resultsNew);
 		} else {
 			// Default query with no filters
 			const res = await fetch('/api/curricula');
@@ -301,4 +305,11 @@ export async function lookupLabel(uri) {
 		});
 		return label;
 	}
+}
+
+export async function getChildren(uri) {
+	const hasPartInfoRes = await fetch(`/api/hasParts?element=${uri}`);
+	const hasPartInfo = await hasPartInfoRes.json();
+	const children = hasPartInfo.map((e) => e.child.value);
+	return children;
 }

@@ -1,6 +1,7 @@
 <script>
 	import { sideBarFilterOpen, sideBarElementOpen } from '$lib/db';
 	import Menu from '$lib/icons/Menu.svelte';
+	import BagCheck from '$lib/icons/BagCheck.svelte';
 	import X from '$lib/icons/X.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 </script>
@@ -27,13 +28,13 @@
 	</div>
 	<button
 		id="sidebarButton"
-		class="btn btn-square btn-ghost drawer-button"
+		class="btn btn-square btn-ghost drawer-button flex"
 		onclick={() => ($sideBarElementOpen = !$sideBarElementOpen)}
 	>
 		{#if $sideBarElementOpen}
 			<X />
 		{:else}
-			<Menu />
+			<BagCheck />
 		{/if}
 	</button>
 </div>
