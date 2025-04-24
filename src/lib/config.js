@@ -26,9 +26,12 @@ PREFIX lp: <https://w3id.org/lehrplan/ontology/>
 PREFIX onto: <http://www.ontotext.com/>
 `;
 
+const isDev = process.env.NODE_ENV === 'development';
+
 export const config = {
 	filterKeys: ['subjects', 'classLevels', 'states', 'subjectsByState', 'types', 'schoolTypes'],
-	// endpoint: 'https://graphdb.edufeed.org/repositories/bayern-new'
-	endpoint: 'http://localhost:7200/repositories/bayern-new',
+	endpoint: isDev
+		? 'http://localhost:7200/repositories/bayern-new'
+		: 'https://graphdb.edufeed.org/repositories/bayern',
 	prefixes
 };
