@@ -1,9 +1,10 @@
 <script>
-	import { sideBarFilterOpen, sideBarElementOpen } from '$lib/db';
+	import { sideBarFilterOpen, sideBarElementOpen, selectedElements } from '$lib/db';
 	import Menu from '$lib/icons/Menu.svelte';
 	import BagCheck from '$lib/icons/BagCheck.svelte';
 	import X from '$lib/icons/X.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import BagCheckFill from '$lib/icons/BagCheckFill.svelte';
 </script>
 
 <div class="navbar bg-[#FE7235] shadow-sm">
@@ -33,6 +34,8 @@
 	>
 		{#if $sideBarElementOpen}
 			<X />
+		{:else if $selectedElements.length > 0}
+			<BagCheckFill />
 		{:else}
 			<BagCheck />
 		{/if}
